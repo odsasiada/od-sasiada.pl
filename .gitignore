@@ -1,0 +1,22 @@
+# AI tools - internal/session data
+.opencode/
+.claude/
+.agents/
+_bmad/
+_bmad-output/
+
+# Common AI assistants
+.cursor/
+.cursorignore
+.cursorindexing
+.aider*
+.copilot/
+.codeium/
+.windsurf/
+.continue/
+.tabnine/
+.amazonq/
+
+# AI session/cache files
+*.ai-session
+*.ai-cache
