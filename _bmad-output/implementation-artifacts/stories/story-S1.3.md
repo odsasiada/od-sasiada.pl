@@ -1,0 +1,28 @@
+# S1.3 — Zapisane adresy klientów
+
+Status: udokumentowany 2026-06-20 · ✅ GOTOWE · EPIC-1
+
+## Historyjka
+
+Jako **klient** chcę **zapisywać, edytować i usuwać moje adresy dostawy i wybierać jeden przy checkout**, aby **nie przepisywać mojego adresu przy każdym zamówieniu** (decyzja B1).
+
+## Kryteria akceptacji (z sprint-1.md)
+
+- Klient zapisuje/edytuje/usuwa adres.
+- Checkout wybiera z listy lub dodaje nowy.
+- Kod pocztowy walidowany wzorem `^\d{2}-\d{3}$`.
+- Wybrany adres jest zapisywany w zamówieniu (snapshot).
+
+## Zależności
+
+- S1.1.
+
+## Uwagi implementacyjne
+
+- `src/payload.config.ts` — nadpisanie `addresses.addressFields` dodaje polską walidację kodu pocztowego (`NN-NNN`) na domyślnych polach adresu pluginu (które już zapewniają relację `customer` + dostęp `isDocumentOwner`). Zgodnie z B1, snapshot adresu per-order jest zachowany.
+- `src/lib/addresses.ts` — zwykłe (bez `'use server'`) helpery odczytu używane przez strony serwerowe.
+- `src/app/(frontend)/[tenant]/address-actions.ts` — mutacje `'use server'` wywoływane z klienta. Importuje `next/headers` **bezpośrednio** (nie przez `@/lib/auth`), aby uniknąć awarii hydratacji Turbopack udokumentowanej w pułapce use-server / Turbopack; helpery odczytu zostały podzielone na `@/lib/addresses`, aby plik akcji był importowany tylko z klienta.
+
+## Dowody testów / weryfikacji
+
+- Dostarczone wcześniej, zweryfikowane przez `pnpm payload run src/spike-addresses.ts` (wyjście `/tmp/spike-addr.txt`): tworzony jest prawidłowy adres; zły kod pocztowy (`12345`) jest odrzucany przez walidację; klient 1 widzi swój 1 adres; klient 2 **nie** widzi adresu klienta 1 (izolacja właściciela przez `isDocumentOwner`).

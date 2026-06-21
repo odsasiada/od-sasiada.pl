@@ -2,8 +2,17 @@
 .opencode/
 .claude/
 .agents/
-_bmad/
-_bmad-output/
+
+# BMad — ignore installer-managed and personal files
+_bmad/config.toml
+_bmad/config.user.toml
+_bmad/custom/config.user.toml
+_bmad/_config/
+_bmad/bmb/
+_bmad/cis/
+_bmad/tea/
+_bmad-output/implementation-artifacts/sprint-status.md
+_bmad-output/implementation-artifacts/sprint-*-retrospective.md
 
 # Common AI assistants
 .cursor/

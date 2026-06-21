@@ -1,0 +1,66 @@
+# S1.2 — Serwerowy koszyk na `Carts` + wymuszone logowanie
+
+Status: udokumentowany 2026-06-20 · ✅ GOTOWE · EPIC-1
+
+## Historyjka
+
+Jako **klient** chcę, aby **mój koszyk był przechowywany serwerowo i powiązany z moim kontem, a checkout wymagał logowania**, aby **ceny i sumy były autorytatywne (nigdy zaufane z klienta) i mój koszyk przetrwał między sesjami** (decyzja B4, ryzyko R3).
+
+## Kryteria akceptacji (z sprint-1.md)
+
+- Checkout wymaga logowania.
+- Koszyk jest trwały na `Carts` (per klient).
+- `placeOrder` odczytuje pozycje z `Carts` (**nie** ufa klientowi).
+- `reorder` zapisuje do `Carts`.
+
+## Zależności
+
+- S1.3, logowanie (auth klienta).
+
+## Uwagi implementacyjne
+
+- **Rdzeń walidacji** `src/lib/cart-validation.ts` — czysty `validateLineItem(payload, {productId, variantId, quantity, tenantId})`. Odczytuje **cenę z bazy** (ignoruje jakąkolwiek cenę klienta), wymusza przynależność produktu do żądanego tenanta (między-tenantskie odrzucane) i odrzuca ilość ≤ 0. Współdzielony przez `cart-actions` i `placeOrder`, więc jest dokładnie jeden autorytet dla ceny/tenanta/ilości.
+- **Helpery koszyka** `src/lib/cart.ts` — logika find-or-create-cart i odczytu koszyka na kolekcji ecommerce `carts` (Local API, `overrideAccess: true`).
+- **Mutacje koszyka** `src/app/(frontend)/[tenant]/cart-actions.ts` — `'use server'`, wywoływane z klienta. Importuje `next/headers` **bezpośrednio** (nie przez `@/lib/auth`) zgodnie z pułapką hydratacji Turbopack.
+- **Akcje zamówień** `src/app/(frontend)/[tenant]/actions.ts` — `placeOrder` ponownie waliduje każdą pozycję koszyka serwerowo i wyprowadza sumę z wiersza koszyka (nie z ciała żądania); `reorder` ZAMIANIA koszyk i przelicza cenę z aktualnej bazy. Importuje `next/headers` bezpośrednio; typy inline.
+- **Store kliencki** `src/components/shop/cart-store.tsx` — zrefaktoryzowany, aby działać na serwerowym koszyku.
+- **Spike'i** `src/spike-cart.ts` (odkrycie) i `src/spike-cart-regression.ts` (zamrożona regresja).
+
+### Pułapki `carts` + wielotenantskie (odkryte przez `src/spike-cart.ts`)
+
+- `tenant` jest **WYMAGANY** na `carts` i **nie** auto-populuje się (akcja serwerowa nie ma kontekstu żądania) — musi być dodany explicite z konta klienta (dziedziczony z klienta, nigdy akceptowany z klienta).
+- `status` **nie jest zapytywalną ścieżką** na `carts` (`QueryError`) → find-or-create scopeduje przez **wyłącznie klienta + tenanta** (jeden otwarty koszyk na parę).
+- Izolacja utrzymywana przez ręczne `where { and: [{customer}, {tenant}] }` — koszyk nie jest odzyskiwalny pod innym tenantem.
+
+### Decyzje zablokowane w tej sesji
+
+- **Reorder = ZAMIEŃ** koszyk i przelicz cenę po aktualnej cenie z bazy (nie scalanie, nie nieaktualna cena).
+- **Wymuszone logowanie zachowuje powrót do checkoutu** — anonimowe dodanie odbija do logowania z `?next=`, koszyk przeżywa, checkout jest wznawiany.
+
+## Dowody testów / weryfikacji (ta sesja — zweryfikowano)
+
+### Regresja na warstwie danych — `src/spike-cart-regression.ts` → 9 / 9 PASS
+
+(wyjście `/tmp/spike-cart-regression.txt`; ćwiczy ten sam rdzeń `validateLineItem` + logikę zapisu koszyka, której używają akcje serwerowe)
+
+| # | Inwariant | Wynik |
+|---|-----------|-------|
+| 1 | Manipulacja ceną: cena jednostkowa to cena z bazy, wartość klienta ignorowana | PASS |
+| 1b | Zapisany subtotal koszyka = cena bazy × ilość (grosze) | PASS |
+| 2 | Suma `placeOrder` wyprowadzona z wiersza koszyka, nie z ciała klienta | PASS |
+| 3 | Produkt między-tenantski odrzucony | PASS |
+| 4 | Koszyk nieodzyskiwalny pod innym tenantem | PASS |
+| 5 | Ilość 0 odrzucona | PASS |
+| 5b | Ilość −5 odrzucona (nigdy ujemna suma) | PASS |
+| 6 | Reorder ZAMienia koszyk (stary wariant wiersza zniknął) | PASS |
+| 6b | Reorder przelicza cenę po aktualnej cenie z bazy, nie nieaktualnej cenie zamówienia | PASS |
+
+### Spike odkrywczy — `src/spike-cart.ts`
+
+Potwierdzono, że `carts` + wielotenantskie współpracują: tenant wymagany i dodawany serwerowo, `status` niezapytywalne, jeden koszyk per klient + tenant, izolacja się utrzymuje.
+
+### Przeglądarkowe E2E
+
+- **Test hydratacji:** PASS — kliknięcie mutuje DOM i **konsola jest czysta**. (To jest kanaryjka dla cichej pułapki hydratacji — patrz test-summary.md.)
+- **Pełna ścieżka pieniężna:** PASS — anonimowe dodanie → odbicie do logowania z `?next=` → koszyk przeżywa przejście → zamówienie złożone (**ZAM-2026-00002**) → pojawia się w `moje-zamowienia` → koszyk wyczyszczony.
+- **Reorder = ZAMIEŃ** potwierdzone, z dialogiem `confirm` przed zamianą.
