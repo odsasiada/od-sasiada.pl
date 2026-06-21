@@ -7,12 +7,6 @@
 
 import type { Payload } from 'payload'
 
-export type LineItemInput = {
-  productId: number
-  quantity: number
-  variantId: null | number
-}
-
 export type ValidatedLine = {
   ok: true
   productId: number

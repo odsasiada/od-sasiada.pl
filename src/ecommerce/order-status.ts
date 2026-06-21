@@ -14,7 +14,7 @@ import type { Field } from 'payload'
  *  - reactivate `cancelled → new`.
  */
 
-export const ORDER_STATUS_SEQUENCE = ['new', 'confirmed', 'preparing', 'out_for_delivery', 'delivered'] as const
+const ORDER_STATUS_SEQUENCE = ['new', 'confirmed', 'preparing', 'out_for_delivery', 'delivered'] as const
 
 export type OrderStatusValue = (typeof ORDER_STATUS_SEQUENCE)[number] | 'cancelled'
 
@@ -27,7 +27,7 @@ export const ORDER_STATUS_LABELS: Record<OrderStatusValue, string> = {
   preparing: 'Preparing',
 }
 
-export const orderStatusOptions: { label: string; value: OrderStatusValue }[] = (
+const orderStatusOptions: { label: string; value: OrderStatusValue }[] = (
   Object.keys(ORDER_STATUS_LABELS) as OrderStatusValue[]
 )
   .sort((a, b) => {

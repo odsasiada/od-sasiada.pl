@@ -1,17 +1,16 @@
 'use client'
 
+import type { CartLine, CartSnapshot } from '@/lib/money'
+
 import { usePathname, useRouter } from 'next/navigation'
 import { createContext, type ReactNode, useContext, useMemo, useOptimistic, useState, useTransition } from 'react'
 
 import { addToCart, clearCart, removeItem, updateQty } from '@/app/(frontend)/[tenant]/cart-actions'
-import { type CartLine, type CartSnapshot, EMPTY_CART } from '@/lib/money'
 
 // Thin client wrapper over the SERVER cart (carts collection). No localStorage — the cart lives
 // in the DB, scoped to the logged-in customer + tenant. Mutations call the 'use server' actions
 // in cart-actions.ts (which validate price + tenant server-side), then router.refresh() reloads
 // the server-rendered snapshot. We keep the exact useCart() surface the components expect.
-
-export type { CartLine as CartItem } from '@/lib/money'
 
 type AddInput = {
   priceInPLN: number
@@ -152,5 +151,3 @@ export const useCart = (): CartContextValue => {
   }
   return ctx
 }
-
-export { EMPTY_CART }

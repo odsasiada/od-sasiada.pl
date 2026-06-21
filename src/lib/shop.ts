@@ -4,7 +4,7 @@ import { getPayload } from 'payload'
 
 import config from '@/payload.config'
 
-export type { CatalogProduct, CatalogVariant, ShopTenant } from '@/lib/money'
+export type { CatalogProduct, ShopTenant } from '@/lib/money'
 
 export { formatPLN } from '@/lib/money'
 

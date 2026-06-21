@@ -209,7 +209,11 @@ const revalidateTenant = () => {
   revalidatePath('/[tenant]', 'layout')
 }
 
-/** Read the current cart snapshot (re-priced from DB). Anonymous → empty cart. */
+/**
+ * Read the current cart snapshot (re-priced from DB). Anonymous → empty cart.
+ * Kept intentionally as a client-callable reader (not yet wired) — see cart-store.tsx.
+ */
+// fallow-ignore-next-line unused-server-actions
 export const getCart = async (tenantId: number): Promise<CartSnapshot> => {
   const payload = await getPayload({ config })
   const customer = await resolveCustomer(payload, tenantId)

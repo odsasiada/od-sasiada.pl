@@ -14,6 +14,7 @@ type Args = {
   }>
 }
 
+// fallow-ignore-next-line unused-export -- Next.js/Payload metadata convention, invoked by the framework
 export const generateMetadata = ({ params, searchParams }: Args): Promise<Metadata> =>
   generatePageMetadata({ config, params, searchParams })
 
