@@ -33,6 +33,8 @@
 # - Stories can be worked in parallel if team capacity allows
 # - Developer typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Story keys follow project convention (S1.1, SPIKE-A, S2.1...), matching files in stories/
+# - Stories are ordered by build order from epics.md
 
 generated: 2026-06-20
 last_updated: 2026-06-21
@@ -42,8 +44,9 @@ tracking_system: file-system
 story_location: "{project-root}/_bmad-output/implementation-artifacts/stories"
 
 development_status:
-  # EPIC-1 — Fundament workflow dostawcy
+  # EPIC-1 — Fundament workflow dostawcy (build order: S1.0 → S1.1 → SPIKE-A → S1.4 → S1.5 → S1.3 → S1.7 → S1.6 → S1.2)
   epic-1: done
+  S1.0: done
   S1.1: done
   SPIKE-A: done
   S1.4: done
@@ -54,27 +57,27 @@ development_status:
   S1.2: done
   epic-1-retrospective: done
 
-  # EPIC-2 — Okna dostawy i powiadomienia o statusie
-  epic-2: backlog
-  S2.1: backlog
-  S2.2: backlog
-  S2.3: backlog
-  S2.4: backlog
-  S2.5: backlog
-  S2.6: backlog
-  S2.7: backlog
-  S2.8: backlog
-  S2.9: backlog
-  SPIKE-S2: backlog
+  # EPIC-2 — Okna dostawy i powiadomienia o statusie (build order: SPIKE-S2 → S2.1 → S2.8 → S2.2 → S2.3 → S2.7 → S2.4 → S2.5 → S2.6; S2.9 PARK)
+  epic-2: in-progress
+  SPIKE-S2: done
+  S2.1: ready-for-dev
+  S2.8: ready-for-dev
+  S2.2: ready-for-dev
+  S2.3: ready-for-dev
+  S2.7: ready-for-dev
+  S2.4: ready-for-dev
+  S2.5: ready-for-dev
+  S2.6: ready-for-dev
+  S2.9: backlog  # PARK — plik historii istnieje, ale świadomie odłożone (sprint-2 „Poza sprintem")
   epic-2-retrospective: optional
 
-  # EPIC-3 — Media i kategorie
-  epic-3: backlog
-  S3.1: backlog
-  S3.2: backlog
-  S3.3: backlog
-  S3.4: backlog
-  S3.5: backlog
-  S3.6: backlog
-  SPIKE-S3: backlog
+  # EPIC-3 — Media i kategorie (build order: SPIKE-S3 → S3.1 → S3.2 → S3.3 → S3.4 → S3.5 → S3.6)
+  epic-3: in-progress
+  SPIKE-S3: in-progress  # Media + multi-tenant + adapter Vercel Blob wpięte (warunkowo); 1 blokada: BLOB_READ_WRITE_TOKEN (realny blob/AC4)
+  S3.1: in-progress  # baseline (Media + adapter) z SPIKE-S3; realny upload zablokowany na BLOB_READ_WRITE_TOKEN
+  S3.2: ready-for-dev
+  S3.3: ready-for-dev
+  S3.4: ready-for-dev
+  S3.5: ready-for-dev
+  S3.6: ready-for-dev
   epic-3-retrospective: optional

@@ -15,6 +15,8 @@
 | Edytor | `@payloadcms/richtext-lexical` | |
 | Lint/format | Biome | |
 | i18n | Tłumaczenia Payload `pl`, fallback `pl` | witryna/admin po polsku; dokumenty po angielsku. |
+| Storage mediów (EPIC-3) | `@payloadcms/storage-vercel-blob` + `@vercel/blob` | Vercel Blob; `BLOB_READ_WRITE_TOKEN` via integrację Vercel Marketplace. Dysk lokalny odrzucony (host efemeryczny). **Do potwierdzenia: SPIKE-S3.** |
+| Deployment | Vercel | Cel deploy = Vercel (przesądza wybór storage — decyzja D1). |
 
 ## 2. Model wielotenantski
 
@@ -74,3 +76,14 @@ Trzy typy aktorów:
 | `carts.tenant` wymagane, `status` niezapytywalne | `tenant` wymagane i **nie** auto-populowane w akcji serwerowej (pieczęć z konta klienta). `status` **nie jest zapytywalną ścieżką** (`QueryError`) → find-or-create scopeduje tylko przez klienta+tenanta, nigdy nie filtruje po `status`. | `carts-collection-gotchas` |
 | `'use server'` + granica hydratacji Turbopack | Plik akcji z `'use server'` importowany przez komponent kliencki musi (1) importować `next/headers` **bezpośrednio** (nie przez `@/lib/auth`), (2) nie być podwójnie importowany przez komponent serwerowy *i* kliencki. Helpery odczytu podzielone na zwykłe moduły (`@/lib/addresses.ts`, `@/lib/cart`). Typy wejściowe akcji trzymane inline. Naruszenie → cicha awaria hydratacji client-island (bez błędu). | `use-server-turbopack-gotcha` |
 | Docker, nie Homebrew, Postgres | Lokalny Postgres działa w jednorazowym Dockerze (`postgres:17`, `od-sasiada-pg`, port 5432, baza `od_sasiada`). Jeśli daemon jest wyłączony, zrestartuj Docker Desktop. | `local-db-docker` |
+| Efemeryczny FS na Vercel | Host Vercel nie ma trwałego dysku — media nie mogą iść na dysk lokalny; muszą trafiać do Vercel Blob (D1). `BLOB_READ_WRITE_TOKEN` przez integrację Marketplace, nie commitowany. | sprint-3.md / §8 |
+
+## 8. Storage mediów i deployment (EPIC-3)
+
+> Status: decyzja D1 (historia: [docs/archive/sprint-3.md](../../docs/archive/sprint-3.md)); **do potwierdzenia w SPIKE-S3** przed S3.1.
+
+- **Adapter:** Vercel Blob (`@payloadcms/storage-vercel-blob`) skonfigurowany na kolekcji `Media`; `sharp` generuje warianty rozmiarów.
+- **ENV/sekrety:** `BLOB_READ_WRITE_TOKEN` dostarczony przez integrację Vercel Marketplace (nie commitowany).
+- **Izolacja serwowania (NFR1):** URL-e blobów **nie mogą** dawać przewidywalnego dostępu cross-tenant; `access.read` na `Media` tenant-scoped (nie publiczny bez filtra). SPIKE-S3 weryfikuje brak przecieku.
+- **Cel deploy:** Vercel (host efemeryczny → dysk lokalny wykluczony).
+- **Wydajność (NFR8):** render katalogu przez `next/image` + warianty `sharp` + lazy-load; mierzyć LCP listy produktów.

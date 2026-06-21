@@ -3,6 +3,16 @@
 #   version, so malware that gets caught & unpublished within hours is never pulled in.
 # - trustPolicy: refuse packages whose provenance/signature trust weakens between updates.
 # - blockExoticSubdeps: block git/tarball/etc. sub-dependencies that bypass the registry.
+# - minimumReleaseAgeExclude: narrow exceptions to the age gate. Scoped here to sharp's
+#   precompiled platform binaries (@img/sharp-*), which ship frequent same-day rebuilds for
+#   the whole arch matrix (incl. archs we never run, e.g. linux-s390x/riscv64). They block
+#   installs on macOS without adding real risk surface — sharp itself stays age-gated.
 minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  - '@img/sharp-*'
+  # happy-dom: already pinned to this exact version in pnpm-lock.yaml (vitest peer, not even
+  # installed). The age gate re-validates it on unrelated `pnpm add` runs — a false positive,
+  # not a fresh version being pulled in. Excluding avoids blocking installs on an existing pin.
+  - 'happy-dom'
 trustPolicy: no-downgrade
 blockExoticSubdeps: true

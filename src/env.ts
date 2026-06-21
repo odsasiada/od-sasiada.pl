@@ -6,6 +6,7 @@ export const env = createEnv({
 
   runtimeEnv: {
     APP_URL: process.env.APP_URL,
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
     EMAIL_FROM: process.env.EMAIL_FROM,
     EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME,
@@ -21,6 +22,10 @@ export const env = createEnv({
 
   server: {
     APP_URL: z.url().default('http://localhost:3000'),
+    // EPIC-3 (SPIKE-S3): Vercel Blob token, provisioned via Vercel Marketplace.
+    // Optional — when absent, Media falls back to local-disk storage (dev), so the
+    // app boots without it. Required only once the vercelBlobStorage adapter is wired.
+    BLOB_READ_WRITE_TOKEN: z.string().min(1).optional(),
     DATABASE_URL: z.url({ protocol: /^postgres/ }),
     EMAIL_FROM: z.email(),
     EMAIL_FROM_NAME: z.string().min(1),

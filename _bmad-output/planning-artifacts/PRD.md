@@ -37,6 +37,30 @@ Wywiedzione z dostarczonych możliwości Sprintu 1 (patrz epics.md dla pierwotny
 | **FR17** | Przy składaniu zamówienia wysyłany jest **e-mail potwierdzający zamówienie** do klienta; hook e-mail o zmianie statusu istnieje (`sendStatusChange`) do przyszłego wykorzystania. Błędy e-maili są logowane, nigdy nie blokują zamówienia. | S1.7, S1.5 |
 | **FR18** | Klienci mogą przeglądać "moje zamówienia" (`/[tenant]/moje-zamowienia`) i **zamawiać ponownie** (zapisuje pozycje do serwerowego koszyka). | bazowy / S1.2 |
 
+### EPIC-2 — Okna dostawy i powiadomienia (decyzje O1–O8; AC: `stories/S2.*`; historia: [archiwum](../../docs/archive/sprint-2.md))
+
+| ID | Wymaganie | Historyjka |
+|----|-----------|------------|
+| **FR19** | Dostawca konfiguruje predefiniowane **stałe okna dostawy** per tenant; klient wybiera z listy (O1). | S2.1, S2.2 |
+| **FR20** | **Cutoff** jako stała godzina dzienna (`cutoffTime`), walidowany serwerowo; slot po cutoffie/przeszły odrzucany (O2). | S2.3 |
+| **FR21** | Okna żyją w dedykowanej kolekcji multi-tenant **`DeliverySlots`** (nie w `tenant.settings`) (O3). | S2.1 |
+| **FR22** | Każdy slot ma **limit miejsc (capacity)**; walidacja dostępności serwerowa i **odporna na wyścig**; pełny slot znika z listy (O4). | S2.7 |
+| **FR23** | Dostawca oznacza **wyjątki dni** (daty niedostępne) wykluczane z dostępnych slotów (O7). | S2.8 |
+| **FR24** | Wybrany slot **snapshotowany** do zamówienia; widoczny w panelu, na froncie i w mailu (B1-style). | S2.4 |
+| **FR25** | **Maile statusowe** tylko na milestone'ach wprzód (`confirmed/out_for_delivery/delivered/cancelled`), bez spamu przy cofnięciu; treść PL (O5/O6). | S2.5, S2.6 |
+| **FR26** | Slot **wymagany**, gdy tenant ma okna; brak okien → feature wyłączony, checkout jak dziś (O8). | S2.2, S2.3 |
+
+### EPIC-3 — Media i kategorie (decyzje D1–D7; AC: `stories/S3.*`; historia: [archiwum](../../docs/archive/sprint-3.md))
+
+| ID | Wymaganie | Historyjka |
+|----|-----------|------------|
+| **FR27** | Kolekcja **`Media`** (Upload) per-tenant; storage **Vercel Blob**; `sharp` rozmiary; `alt` wymagane (D1, D2). | S3.1 |
+| **FR28** | Pojedyncze **hero** na produkcie **oraz** wariancie; fallback **wariant→produkt→placeholder**; zdjęcie opcjonalne (D3, D6). | S3.2, S3.3 |
+| **FR29** | Render zdjęcia na katalogu `/[tenant]` i w szczegółach zamówienia (panel + front), `next/image`. | S3.3 |
+| **FR30** | Kolekcja **`Categories`** per-tenant; relacja produkt↔kategoria **`hasMany`**; kategoria opcjonalna (D4, D5, D7). | S3.4 |
+| **FR31** | CRUD kategorii w panelu, **tenant-scoped**. | S3.5 |
+| **FR32** | **Filtr po kategorii** na katalogu, server-side (`?kategoria=`), `tenant` zawsze w `where`. | S3.6 |
+
 ## 4. Wymagania niefunkcjonalne
 
 | ID | Wymaganie |
@@ -48,12 +72,13 @@ Wywiedzione z dostarczonych możliwości Sprintu 1 (patrz epics.md dla pierwotny
 | **NFR5 | **Lokalizacja:** witryna i admin w języku polskim (`i18n` fallback `pl`); waluta PLN z symbolem `zł`. |
 | **NFR6** | **Poprawność hydratacji (Next 16 + Turbopack):** pliki akcji z `'use server'` importowane przez komponenty klienckie muszą importować `next/headers` bezpośrednio i nie być podwójnie importowane przez komponenty serwerowe + klienckie, aby uniknąć cichej awarii hydratacji client-island. |
 | **NFR7** | **Środowisko dev lokalne:** Postgres działa w jednorazowym kontenerze Docker (`postgres:17`, `od-sasiada-pg`), nie Homebrew. |
+| **NFR8** | **Wydajność frontu katalogu ze zdjęciami (EPIC-3):** `next/image` + warianty `sharp` + lazy-load; LCP listy produktów mierzony i utrzymany pod kontrolą. |
 
 ## 5. Epiki
 
 - **EPIC-1 — Fundament workflow dostawcy** (Sprint 1, wszystkie 8 ticketów GOTOWE). Historyjki S1.1–S1.7 + SPIKE-A. Patrz [epics.md](./epics.md).
-- **EPIC-2 — Okna dostawy i powiadomienia o statusie** (backlog S2): wybór okna czasowego dostawy z cutoff; e-mail o zmianie statusu.
-- **EPIC-3 — Media i kategorie** (backlog S3): zdjęcia produktów (Media per-tenant); kategorie produktów.
+- **EPIC-2 — Okna dostawy i powiadomienia o statusie** (S2, FR19–FR26): wybór okna czasowego dostawy z cutoff; **limit miejsc na slot (capacity, odporny na wyścig)**; **wyjątki dni**; e-mail o zmianie statusu (milestone'y, PL). Szczegóły: [epics.md](./epics.md) + `stories/S2.*`.
+- **EPIC-3 — Media i kategorie** (S3, FR27–FR32): zdjęcia produktów (Media per-tenant, **Vercel Blob**); **zdjęcie na produkcie i wariancie z fallbackiem**; **wiele kategorii na produkt (`hasMany`)**. Szczegóły: [epics.md](./epics.md) + `stories/S3.*`.
 
 ## 6. Poza zakresem / backlog
 

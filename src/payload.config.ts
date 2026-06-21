@@ -8,6 +8,7 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { ecommercePlugin } from '@payloadcms/plugin-ecommerce'
 import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 import { pl } from '@payloadcms/translations/languages/pl'
 import { buildConfig } from 'payload'
 import sharp from 'sharp'
@@ -22,6 +23,7 @@ import {
   publicAccess,
 } from '@/access'
 import { Customers } from '@/collections/Customers'
+import { Media } from '@/collections/Media'
 import { Tenants } from '@/collections/Tenants'
 import { Users } from '@/collections/Users'
 import { ordersOverride } from '@/ecommerce/orders'
@@ -47,7 +49,7 @@ export default buildConfig({
     user: Users.slug,
   },
 
-  collections: [Users, Tenants, Customers],
+  collections: [Users, Tenants, Customers, Media],
 
   db: postgresAdapter({
     pool: {
@@ -164,6 +166,8 @@ export default buildConfig({
         addresses: {},
         carts: {},
         customers: {},
+        // EPIC-3 (SPIKE-S3): per-tenant media library — tenant stamp + panel isolation.
+        media: {},
         orders: {},
         products: {},
         transactions: {},
@@ -175,6 +179,19 @@ export default buildConfig({
       tenantsSlug: 'tenants',
       userHasAccessToAllTenants: (user) => Boolean((user as { roles?: string[] })?.roles?.includes('platform-admin')),
     }),
+
+    // EPIC-3 (SPIKE-S3 / D1): Vercel Blob storage for the Media collection.
+    // Conditional on the token (provisioned via Vercel Marketplace) so dev/CI without it
+    // fall back to local-disk storage and the app still boots. Verify cross-tenant blob
+    // serving isolation (R-S3.2) once a real token is present — see SPIKE-S3 decision note.
+    ...(env.BLOB_READ_WRITE_TOKEN
+      ? [
+          vercelBlobStorage({
+            collections: { media: true },
+            token: env.BLOB_READ_WRITE_TOKEN,
+          }),
+        ]
+      : []),
   ],
 
   secret: env.PAYLOAD_SECRET,

@@ -38,9 +38,53 @@
 - **S1.6** — pełne szczegóły zamówienia w panelu (snapshot, adres, kontakt, edytowalny status) i na froncie klienta (tylko do odczytu, izolacja tenant+klient).
 - **S1.2** — checkout wymaga logowania; koszyk utrzymywany na `Carts` (per klient); `placeOrder` odczytuje pozycje z `Carts` (nie ufa klientowi); `reorder` zapisuje do `Carts`.
 
-## Przyszłe epiki
+## EPIC-2 — Okna dostawy i powiadomienia o statusie
 
-- **EPIC-2 — Okna dostawy i powiadomienia o statusie** (📋 zaplanowany, decyzje ZABLOKOWANE → patrz [`docs/sprint-2.md`](../../docs/sprint-2.md)): wybór okna czasowego dostawy z cutoff; e-mail o zmianie statusu do klienta (hook `sendStatusChange` już istnieje). Rozbity na **S2.1–S2.9 + SPIKE-S2** — wszystkie ☐ TODO; decyzje O1–O8 rozstrzygnięte (O3 dedykowana kolekcja `DeliverySlots`, O4 pojemność w sprincie, O7 wyjątki dzienne w sprincie → sprint urósł: S2.1 M→L, +S2.7 pojemność, +S2.8 wyjątki, SPIKE S→M).
-- **EPIC-3 — Media i kategorie** (📋 zaplanowany, decyzje ZABLOKOWANE → patrz [`docs/sprint-3.md`](../../docs/sprint-3.md)): zdjęcia produktów przez kolekcję Media per-tenant; kategorie produktów. Rozbity na **S3.1–S3.6 + SPIKE-S3** — wszystkie ☐ TODO; decyzje D1–D7 rozstrzygnięte (D1 Vercel Blob, D3 obraz produktu+wariantu → S3.2 S→M, D4 multi-kategoria hasMany).
+**Cel (= Cel Sprintu 2):** zalogowany klient wybiera w checkoucie termin (slot) dostawy walidowany serwerowo względem cutoffu, limitu miejsc i wyjątków dni, zrzucony (snapshot) do zamówienia; przy istotnej zmianie statusu dostaje maila — domykając pętlę „zamów → wiem kiedy dojedzie → wiem co się dzieje".
 
-*Dalszy backlog (jeszcze nie w rozmiarze epiku): korekta wagi przy dostawie (faza 2), e-mail klienta per-tenant, łączenie gość→konto, SMS. Odłożone poza MVP: fakturowanie operatora (3+ tenantów), pełne RODO.*
+**Status:** 📋 zaplanowany — wszystkie historie ☐ TODO. FR19–FR26 (PRD §3). Pełne AC: pliki `stories/S2.*` + `stories/SPIKE-S2.md`. Rejestr ryzyk / decyzje (historia): [`docs/archive/sprint-2.md`](../../docs/archive/sprint-2.md).
+
+**Zablokowane decyzje (O1–O8):** O1 stałe okna; O2 cutoff jako godzina dzienna; **O3 dedykowana kolekcja `DeliverySlots`** (nie `tenant.settings`); **O4 capacity w sprincie** (limit miejsc, walidacja odporna na wyścig); O5 maile na milestone'ach; O6 mail przy `cancelled`, ciche cofnięcia; **O7 wyjątki dni w sprincie**; O8 slot wymagany, gdy tenant ma okna. Reguła capacity przy `cancelled`: **zwalniamy miejsce; `cancelled→new` re-waliduje** (zatwierdzone).
+
+**Kolejność budowania:** `SPIKE-S2 → S2.1 → S2.8 → S2.2 → S2.3 → S2.7 → S2.4 → S2.5 → S2.6` (S2.9 PARK).
+
+### Historyjki
+
+| ID | Twierdzenie historyjki | Est. | Status | Zależy od |
+|----|------------------------|------|--------|-----------|
+| **SPIKE-S2** | Jako operator chcę potwierdzić kształt kolekcji `DeliverySlots` (O3) i matematykę cutoffu (strefa PL/Europe-Warsaw), w tym podejście do wyjątków dni (O7) i współbieżności capacity (O4), by reszta S2 budowała się na pewnym fundamencie. | M | ☐ TODO | — (pierwsza) |
+| **S2.1** | Jako dostawca chcę skonfigurować tygodniowe okna dostawy + cutoff + limit miejsc w dedykowanej kolekcji `DeliverySlots` (multi-tenant), by klient wybierał tylko realne terminy. | L | ☐ TODO | SPIKE-S2 |
+| **S2.8** | Jako dostawca chcę oznaczać konkretne daty jako niedostępne (wyjątki/override harmonogramu), by sloty z tych dni nie były oferowane (O7). | M | ☐ TODO | S2.1 |
+| **S2.2** | Jako klient chcę wybrać w checkoucie termin dostawy z listy dostępnych slotów, by wiedzieć kiedy dojedzie zamówienie. | M | ☐ TODO | S2.1, S2.8 |
+| **S2.3** | Jako operator chcę serwerowej walidacji cutoffu w `placeOrder`, by nie dało się wybrać slotu zamkniętego/przeszłego/wyłączonego (klientowi nie ufamy). | M | ☐ TODO | S2.2 |
+| **S2.7** | Jako operator chcę serwerowej walidacji DOSTĘPNOŚCI slotu (capacity) odpornej na wyścig przy `placeOrder`, by dwoje klientów nie zarezerwowało ostatniego miejsca naraz i slot pełny znikał z listy (O4). | M | ☐ TODO | S2.3 |
+| **S2.4** | Jako dostawca i klient chcę widzieć wybrany slot w szczegółach zamówienia (panel + front read-only) i w mailu potwierdzającym, by termin był wiążącym snapshotem zamówienia. | S | ☐ TODO | S2.7 |
+| **S2.5** | Jako klient chcę dostawać maila przy istotnej zmianie statusu (PL, milestone'y, bez spamu przy cofnięciu) — **zawężenie istniejącego `sendStatusChange`, który dziś wysyła na każdej zmianie** — by wiedzieć co się dzieje bez dzwonienia. | M | ☐ TODO | S1.5 (hook istnieje) |
+| **S2.6** | Jako operator chcę PL-izacji treści maili (potwierdzenie + status) i dodania slotu/kontaktu dostawcy, by komunikacja była po polsku i kompletna. | S | ☐ TODO | S2.4, S2.5 |
+| **S2.9** | Jako dostawca chcę widoku dziennego obłożenia slotów w panelu (zajęte/limit per slot), by planować rozwóz. | M | ☐ TODO (PARK) | S2.1, S2.7 |
+
+## EPIC-3 — Media i kategorie
+
+**Cel (= Cel Sprintu 3):** dostawca dodaje zdjęcia i kategorie produktów, a klient przegląda katalog ze zdjęciami i filtruje po kategoriach — wszystko izolowane per-tenant.
+
+**Status:** 📋 zaplanowany — wszystkie historie ☐ TODO. FR27–FR32 (PRD §3). Pełne AC: pliki `stories/S3.*` + `stories/SPIKE-S3.md`. Rejestr ryzyk / decyzje (historia): [`docs/archive/sprint-3.md`](../../docs/archive/sprint-3.md).
+
+**Zablokowane decyzje (D1–D7):** **D1 storage = Vercel Blob** (deploy = Vercel, ENV przez Marketplace); D2 jedno hero (galeria → backlog); **D3 zdjęcie na produkcie ORAZ wariancie** (fallback wariant→produkt→placeholder); **D4 wiele kategorii na produkt (`hasMany`)**; D5 kategorie per-tenant; D6 zdjęcie opcjonalne; D7 kategoria opcjonalna.
+
+**Kolejność budowania:** `SPIKE-S3 → S3.1 → S3.2 → S3.3 → S3.4 → S3.5 → S3.6` (S3.4 równolegle do S3.1; upload UX S3.7 domyka się w S3.1).
+
+### Historyjki
+
+| ID | Twierdzenie historyjki | Est. | Status | Zależy od |
+|----|------------------------|------|--------|-----------|
+| **SPIKE-S3** | Jako operator chcę potwierdzić: kolekcja Upload + plugin-multi-tenant (pole `tenant`, izolacja access) + serwowanie obrazów per-tenant + adapter **Vercel Blob** — działa lokalnie i ma ścieżkę na deploy Vercel. | S | ☐ TODO | — (pierwsza; zmienia config + zależności deploy) |
+| **S3.1** | Jako dostawca chcę kolekcji `Media` (Upload) per-tenant (access ograniczający do własnych mediów; `sharp` rozmiary; `alt`; storage Vercel Blob), by wgrywać zdjęcia produktów. | M | ☐ TODO | SPIKE-S3 |
+| **S3.2** | Jako dostawca chcę przypisać pojedyncze hero do produktu **oraz** wariantu (oba opcjonalne, izolacja tenant-match; wariant nadpisuje hero produktu), by prezentować właściwe zdjęcie (D3). | M | ☐ TODO | S3.1 |
+| **S3.3** | Jako klient chcę widzieć zdjęcie na katalogu `/[tenant]` i w szczegółach zamówienia (`next/image`, fallback wariant→produkt→placeholder), by wiedzieć co kupuję (D3). | M | ☐ TODO | S3.2 |
+| **S3.4** | Jako dostawca chcę kolekcji `Categories` per-tenant z relacją produkt↔kategoria **`hasMany`** (wiele kategorii na produkt), by porządkować katalog (D4). | M | ☐ TODO | — (równolegle do S3.1) |
+| **S3.5** | Jako dostawca chcę zarządzać tylko własnymi kategoriami w panelu (CRUD tenant-scoped; B nie widzi kategorii A), by mieć izolowaną taksonomię. | S | ☐ TODO | S3.4 |
+| **S3.6** | Jako klient chcę filtrować katalog `/[tenant]` po kategorii (`?kategoria=`, server-side, `tenant` zawsze w `where`; produkt z wieloma kategoriami widoczny w każdej), by szybciej znaleźć produkty (D4). | M | ☐ TODO | S3.4, S3.3 |
+
+## Dalszy backlog
+
+*Jeszcze nie w rozmiarze epiku: korekta wagi przy dostawie (faza 2), e-mail klienta per-tenant, łączenie gość→konto, SMS, galeria zdjęć, hierarchia kategorii. Odłożone poza MVP: fakturowanie operatora (3+ tenantów), pełne RODO.*
