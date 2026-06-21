@@ -10,6 +10,7 @@ import { getPayload } from 'payload'
 
 import { validateLineItem } from '@/lib/cart-validation'
 import { formatPLN } from '@/lib/money'
+import type { Order } from '@/payload-types'
 import config from '@/payload.config'
 
 export type Contact = {
@@ -174,7 +175,7 @@ export const reorder = async (tenantId: number, orderId: number): Promise<Reorde
 
   // Re-price every order line independently → fan out, then fold results IN ORDER.
   const repriced = await Promise.all(
-    (order.items ?? []).map(async (raw) => {
+    (order.items ?? []).map(async (raw: NonNullable<Order['items']>[number]) => {
       const productId = idOf(raw.product)
       if (!productId) {
         return null
