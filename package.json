@@ -22,7 +22,10 @@
     "@types/node": "^26.0.0",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
-    "typescript": "^6.0.3"
+    "dotenv": "^17.4.2",
+    "typescript": "^6.0.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   },
   "name": "od-sasiada.pl",
   "packageManager": "pnpm@10.27.0",
@@ -36,7 +39,9 @@
     "payload:importMap": "payload generate:importmap",
     "payload:types": "payload generate:types",
     "seed": "payload run src/seed.ts",
-    "start": "next start"
+    "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "type": "module",
   "version": "1.0.0"

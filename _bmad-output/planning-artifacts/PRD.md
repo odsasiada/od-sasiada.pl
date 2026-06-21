@@ -21,7 +21,7 @@ Wywiedzione z dostarczonych możliwości Sprintu 1 (patrz epics.md dla pierwotny
 | **FR1** | Platforma jest wielotenantska: każdy dostawca jest tenantem. Izolacja utrzymywana w panelu admina, Local API i froncie, tak że dostawca widzi tylko własne dane. | SPIKE-A, S1.4 |
 | **FR2** | Katalog używa modelu Produkt + Wariant **"porcja"** (np. produkt z wariantami per porcja); każdy produkt/wariant ma cenę w groszach. | bazowy / S1.1 |
 | **FR3** | Każdy tenant ma katalog i witrynę per-tenant pod `/[tenant]`; publiczny katalog wyświetla tylko **opublikowane** produkty dla tego tenanta. | bazowy |
-| **FR4** | Klienci mogą się rejestrować, logować i wylogowywać (kolekcja `customers`, z autentykacją); klient zalogowany u dostawcy A jest traktowany jako anonimowy u dostawcy B. | S1.2 (zależność logowania) |
+| **FR4** | Klienci mogą się rejestrować, logować i wylogowywać (kolekcja `customers`, z autentykacją); klient zalogowany u dostawcy A jest traktowany jako anonimowy u dostawcy B. | S1.0 |
 | **FR5** | Klienci mogą żądać **resetu hasła** e-mailem. | S1.7 |
 | **FR6** | Koszyk jest **serwerowy** (kolekcja ecommerce `carts`), jeden otwarty koszyk per klient+tenant, utrzymywany między sesjami. | S1.2 |
 | **FR7** | Checkout **wymaga logowania** (checkout gościa poza zakresem). | S1.2 |
