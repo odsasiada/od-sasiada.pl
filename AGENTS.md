@@ -1,3 +1,7 @@
+## Project Context
+
+- **Przeczytaj [`_bmad-output/project-context.md`](./_bmad-output/project-context.md) PRZED implementacją jakiegokolwiek kodu.** Zawiera krytyczne, nieoczywiste reguły (izolacja wielotenantska, pułapki pluginu ecommerce, granica `'use server'`/Turbopack, ceny w groszach) oraz stack z dokładnymi wersjami. W razie wątpliwości wybierz wariant bardziej restrykcyjny.
+
 ## Fallow
 
 - Use `fallow audit --format json --quiet` before committing AI-generated changes.
