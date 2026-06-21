@@ -1,3 +1,5 @@
+import type { Field } from 'payload'
+
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -97,17 +99,18 @@ export default buildConfig({
       // isDocumentOwner out of the box); we add Polish postal code validation NN-NNN.
       addresses: {
         addressFields: ({ defaultFields }) =>
-          defaultFields.map((field) =>
-            'name' in field && field.name === 'postalCode'
-              ? {
-                  ...field,
-                  validate: (value: unknown) =>
-                    !value ||
-                    /^\d{2}-\d{3}$/.test(String(value)) ||
-                    'Postal code must be in NN-NNN format (e.g. 83-300).',
-                }
-              : field,
-          ),
+          defaultFields.map((field): Field => {
+            if (field.type === 'text' && field.name === 'postalCode') {
+              return {
+                ...field,
+                validate: (value: unknown) =>
+                  !value ||
+                  /^\d{2}-\d{3}$/.test(String(value)) ||
+                  'Postal code must be in NN-NNN format (e.g. 83-300).',
+              }
+            }
+            return field
+          }),
       },
 
       currencies: {
