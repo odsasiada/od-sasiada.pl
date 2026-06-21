@@ -1,19 +1,20 @@
 import type { SavedAddress } from '@/lib/money'
+import type { Address } from '@/payload-types'
 
 import { getPayload } from 'payload'
 
 import { getCurrentCustomer } from '@/lib/auth'
 import config from '@/payload.config'
 
-const toSaved = (doc: Record<string, unknown>): SavedAddress => ({
-  addressLine1: String(doc.addressLine1 ?? ''),
-  city: String(doc.city ?? ''),
-  firstName: String(doc.firstName ?? ''),
-  id: doc.id as number,
-  lastName: String(doc.lastName ?? ''),
-  phone: String(doc.phone ?? ''),
-  postalCode: String(doc.postalCode ?? ''),
-  title: (doc.title as string) ?? null,
+const toSaved = (doc: Address): SavedAddress => ({
+  addressLine1: doc.addressLine1 ?? '',
+  city: doc.city ?? '',
+  firstName: doc.firstName ?? '',
+  id: doc.id,
+  lastName: doc.lastName ?? '',
+  phone: doc.phone ?? '',
+  postalCode: doc.postalCode ?? '',
+  title: doc.title ?? null,
 })
 
 /**
@@ -34,5 +35,5 @@ export const getCustomerAddresses = async (tenantId: number): Promise<SavedAddre
     overrideAccess: true,
     where: { customer: { equals: customer.id }, tenant: { equals: tenantId } },
   })
-  return res.docs.map((d) => toSaved(d as Record<string, unknown>))
+  return res.docs.map(toSaved)
 }
