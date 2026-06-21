@@ -65,7 +65,7 @@ const run = async () => {
   try {
     await payload.update({
       collection: 'orders',
-      data: { status: 'completed' },
+      data: { status: 'confirmed' },
       id: orderA.id,
       overrideAccess: false,
       user: adminBUser,
@@ -78,7 +78,7 @@ const run = async () => {
   // check if status actually didn't change
   const after = await payload.findByID({ collection: 'orders', id: orderA.id })
 
-  log(`ATTEMPT: admin B updates status=completed on order A (overrideAccess:false)`)
+  log(`ATTEMPT: admin B updates status=confirmed on order A (overrideAccess:false)`)
   log(`  Threw exception (blocked): ${blocked ? 'YES' : 'NO'}${detail ? ` — ${detail.slice(0, 80)}` : ''}`)
   log(`  Order status after attempt: ${after.status} (expected: new)`)
   log('')

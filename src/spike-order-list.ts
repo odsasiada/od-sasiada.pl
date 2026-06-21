@@ -30,6 +30,7 @@ const run = async () => {
       currency: 'PLN',
       customerEmail: 'list@example.com',
       items: [{ product: product.id, quantity: 1 }],
+      status: 'new',
       tenant: tenantA.id,
     },
   })

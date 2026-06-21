@@ -2,6 +2,8 @@ import { writeFileSync } from 'node:fs'
 
 import { getPayload } from 'payload'
 
+import type { OrderStatusValue } from '@/ecommerce/order-status'
+
 import config from '@/payload.config'
 
 /**
@@ -24,11 +26,12 @@ const run = async () => {
       currency: 'PLN',
       customerEmail: 'sm@example.com',
       items: [{ product: product.id, quantity: 1 }],
+      status: 'new',
       tenant: tenant.id,
     },
   })
 
-  const tryUpdate = async (to: string): Promise<{ err?: string; ok: boolean }> => {
+  const tryUpdate = async (to: OrderStatusValue): Promise<{ err?: string; ok: boolean }> => {
     try {
       await payload.update({ collection: 'orders', data: { status: to }, id: order.id })
       return { ok: true }
@@ -37,7 +40,7 @@ const run = async () => {
     }
   }
 
-  const expect = async (to: string, shouldPass: boolean, note: string) => {
+  const expect = async (to: OrderStatusValue, shouldPass: boolean, note: string) => {
     const r = await tryUpdate(to)
     const pass = r.ok === shouldPass
     log(`${pass ? 'PASS ✅' : 'FAIL ❌'} ${note}: → ${to} ${r.ok ? '(passed)' : '(blocked)'}`)
