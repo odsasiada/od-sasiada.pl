@@ -27,7 +27,7 @@
   "name": "od-sasiada.pl",
   "packageManager": "pnpm@10.27.0",
   "scripts": {
-    "build": "next build",
+    "build": "payload generate:importmap && next build",
     "dev": "next dev",
     "format": "biome format --write .",
     "lint": "biome check .",
