@@ -17,6 +17,50 @@ _bmad-output/
 .tabnine/
 .amazonq/
 
+# Docs
+docs/
+
 # AI session/cache files
 *.ai-session
 *.ai-cache
+
+# Next.js
+.next/
+out/
+
+# Node.js / pnpm
+node_modules/
+.pnpm-store/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+build/
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Payload CMS (auto-generated)
+src/payload-types.ts
+src/importMap.js
+
+# Vercel
+.vercel
+
+# Secrets
+vercel-od-sasiada-recovery-codes.txt
+
+# Macos
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd

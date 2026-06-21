@@ -1,0 +1,77 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.0/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              { "type": true },
+              ":BLANK_LINE:",
+              [":URL:", ":NODE:", ":BUN:", ":PACKAGE_WITH_PROTOCOL:"],
+              ":BLANK_LINE:",
+              ":PACKAGE:",
+              ":BLANK_LINE:",
+              [":ALIAS:", "@/"],
+              ":PATH:"
+            ],
+            "identifierOrder": "natural"
+          }
+        },
+        "useSortedAttributes": "on",
+        "useSortedKeys": "on",
+        "useSortedProperties": "on"
+      }
+    },
+    "enabled": true
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["**", "!**/src/payload-types.ts", "!**/src/importMap.js"]
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "auto",
+    "lineWidth": 120
+  },
+  "javascript": {
+    "formatter": {
+      "jsxQuoteStyle": "single",
+      "quoteStyle": "single",
+      "semicolons": "asNeeded"
+    },
+    "jsxRuntime": "transparent"
+  },
+  "json": {
+    "parser": {
+      "allowComments": true
+    }
+  },
+  "linter": {
+    "domains": {
+      "next": "recommended",
+      "react": "recommended"
+    },
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "suspicious": {
+        "noArrayIndexKey": "off"
+      }
+    }
+  },
+  "vcs": {
+    "clientKind": "git",
+    "enabled": true,
+    "useIgnoreFile": true
+  }
+}

@@ -1,13 +1,43 @@
 {
-  "name": "od-sasiada.pl",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "dependencies": {
+    "@payloadcms/db-postgres": "^3.85.1",
+    "@payloadcms/email-nodemailer": "^3.85.1",
+    "@payloadcms/next": "^3.85.1",
+    "@payloadcms/plugin-ecommerce": "^3.85.1",
+    "@payloadcms/plugin-multi-tenant": "^3.85.1",
+    "@payloadcms/richtext-lexical": "^3.85.1",
+    "@payloadcms/translations": "^3.85.1",
+    "@payloadcms/ui": "^3.85.1",
+    "@t3-oss/env-nextjs": "^0.13.11",
+    "next": "^16.2.9",
+    "payload": "^3.85.1",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "sharp": "^0.35.2",
+    "zod": "^4.4.3"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "packageManager": "pnpm@10.27.0"
+  "description": "Multi-tenant platforma zamówień dla lokalnych dostawców świeżej żywności",
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
+    "@types/node": "^26.0.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.3"
+  },
+  "name": "od-sasiada.pl",
+  "packageManager": "pnpm@10.27.0",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "payload": "payload",
+    "payload:importMap": "payload generate:importmap",
+    "payload:types": "payload generate:types",
+    "seed": "payload run src/seed.ts",
+    "start": "next start"
+  },
+  "type": "module",
+  "version": "1.0.0"
 }
