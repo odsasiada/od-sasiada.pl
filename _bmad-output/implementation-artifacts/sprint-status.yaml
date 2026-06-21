@@ -1,0 +1,80 @@
+# generated: 2026-06-20
+# last_updated: 2026-06-20
+# project: od-sasiada.pl
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-06-20
+last_updated: 2026-06-20
+project: od-sasiada.pl
+project_key: NOKEY
+tracking_system: file-system
+story_location: {project-root}/_bmad-output/implementation-artifacts
+
+development_status:
+  # EPIC-1 — Fundament workflow dostawcy
+  epic-1: done
+  epic-1-1-wylaczenie-inventory: done
+  epic-1-spike-a-izolacja-tenantow-update-zamowienia: done
+  epic-1-4-panel-dostawcy-lista-zamowien-scopedowana: done
+  epic-1-5-automat-stanow-zamowienia-liniowy-cofaniem: done
+  epic-1-3-zapisane-adresy-klientow-adresy-pola-pl: done
+  epic-1-7-adapter-e-mail-potwierdzajacy-reset-hasla: done
+  epic-1-6-szczegoly-zamowienia-panel-trasa-frontend: done
+  epic-1-2-serwerowy-koszyk-carts-wymuszone-logowanie: done
+  epic-1-retrospective: done
+
+  # EPIC-2 — Okna dostawy i powiadomienia o statusie
+  epic-2: backlog
+  epic-2-1-okna-dostawy: backlog
+  epic-2-2-okna-dostawy: backlog
+  epic-2-3-okna-dostawy: backlog
+  epic-2-4-okna-dostawy: backlog
+  epic-2-5-okna-dostawy: backlog
+  epic-2-6-okna-dostawy: backlog
+  epic-2-7-okna-dostawy: backlog
+  epic-2-8-okna-dostawy: backlog
+  epic-2-9-okna-dostawy: backlog
+  epic-2-spike-s2: backlog
+  epic-2-retrospective: optional
+
+  # EPIC-3 — Media i kategorie
+  epic-3: backlog
+  epic-3-1-media-i-kategorie: backlog
+  epic-3-2-media-i-kategorie: backlog
+  epic-3-3-media-i-kategorie: backlog
+  epic-3-4-media-i-kategorie: backlog
+  epic-3-5-media-i-kategorie: backlog
+  epic-3-6-media-i-kategorie: backlog
+  epic-3-spike-s3: backlog
+  epic-3-retrospective: optional
