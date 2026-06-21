@@ -1,0 +1,8 @@
+# Supply-chain hardening for pnpm installs.
+# - minimumReleaseAge: wait 7 days (10080 min) before installing a freshly published
+#   version, so malware that gets caught & unpublished within hours is never pulled in.
+# - trustPolicy: refuse packages whose provenance/signature trust weakens between updates.
+# - blockExoticSubdeps: block git/tarball/etc. sub-dependencies that bypass the registry.
+minimumReleaseAge: 10080
+trustPolicy: no-downgrade
+blockExoticSubdeps: true

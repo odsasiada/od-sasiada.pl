@@ -20,9 +20,8 @@ const run = async () => {
 
   // two customers of the same supplier
   const mk = async (email: string) => {
-    for (const c of (await payload.find({ collection: 'customers', where: { email: { equals: email } } })).docs) {
-      await payload.delete({ collection: 'customers', id: c.id })
-    }
+    const dupes = (await payload.find({ collection: 'customers', where: { email: { equals: email } } })).docs
+    await Promise.all(dupes.map((c) => payload.delete({ collection: 'customers', id: c.id })))
     return payload.create({
       collection: 'customers',
       data: { email, firstName: email.split('@')[0], password: 'haslo12345', tenant: tenant.id },

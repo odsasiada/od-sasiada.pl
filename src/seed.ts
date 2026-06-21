@@ -99,20 +99,23 @@ const seed = async () => {
       },
     })
 
-    for (const v of variants) {
-      await payload.create({
-        collection: 'variants',
-        data: {
-          _status: 'published',
-          options: [v.optionId],
-          priceInPLN: v.priceInPLN,
-          priceInPLNEnabled: true,
-          product: product.id,
-          tenant: tenantId,
-          title: v.label,
-        },
-      })
-    }
+    // Variants of a product are independent of each other → create them concurrently.
+    await Promise.all(
+      variants.map((v) =>
+        payload.create({
+          collection: 'variants',
+          data: {
+            _status: 'published',
+            options: [v.optionId],
+            priceInPLN: v.priceInPLN,
+            priceInPLNEnabled: true,
+            product: product.id,
+            tenant: tenantId,
+            title: v.label,
+          },
+        }),
+      ),
+    )
 
     return product
   }

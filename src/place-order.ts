@@ -31,9 +31,7 @@ const run = async () => {
   // ── Customer (idempotent) ─────────────────────────────────────────────────
   const email = 'anna.kowalska@example.com'
   const existing = await payload.find({ collection: 'customers', limit: 1, where: { email: { equals: email } } })
-  for (const c of existing.docs) {
-    await payload.delete({ collection: 'customers', id: c.id })
-  }
+  await Promise.all(existing.docs.map((c) => payload.delete({ collection: 'customers', id: c.id })))
 
   const customer = await payload.create({
     collection: 'customers',

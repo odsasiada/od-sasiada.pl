@@ -29,17 +29,13 @@ const run = async () => {
 
   // ── Clean up previous B (idempotent) ────────────────────────────────────
   const oldB = await payload.find({ collection: 'tenants', limit: 1, where: { slug: { equals: 'zielony-ogrod' } } })
-  for (const t of oldB.docs) {
-    await payload.delete({ collection: 'tenants', id: t.id })
-  }
+  await Promise.all(oldB.docs.map((t) => payload.delete({ collection: 'tenants', id: t.id })))
   const oldUser = await payload.find({
     collection: 'users',
     limit: 1,
     where: { email: { equals: 'dostawca-b@od-sasiada.pl' } },
   })
-  for (const u of oldUser.docs) {
-    await payload.delete({ collection: 'users', id: u.id })
-  }
+  await Promise.all(oldUser.docs.map((u) => payload.delete({ collection: 'users', id: u.id })))
 
   // ── Supplier B ───────────────────────────────────────────────────────────
   const tenantB = await payload.create({

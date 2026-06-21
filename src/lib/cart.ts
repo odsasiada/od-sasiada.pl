@@ -45,27 +45,30 @@ export const getCartSnapshot = async (tenantId: number): Promise<CartSnapshot> =
     return EMPTY_CART
   }
 
-  const items: CartLine[] = []
-  for (const raw of cart.items ?? []) {
-    const productId = idOf(raw.product)
-    if (!productId) {
-      continue
-    }
-    const variantId = idOf(raw.variant)
-    const validated = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
-    if (!validated.ok) {
-      continue
-    }
-    items.push({
-      key: keyOf(productId, variantId),
-      priceInPLN: validated.unitPrice,
-      productId,
-      quantity: validated.quantity,
-      title: validated.productNameSnapshot,
-      variantId,
-      variantLabel: validated.variantLabelSnapshot,
-    })
-  }
+  // Each line is an independent DB read → validate concurrently, preserving order, drop misses.
+  const built = await Promise.all(
+    (cart.items ?? []).map(async (raw): Promise<CartLine | null> => {
+      const productId = idOf(raw.product)
+      if (!productId) {
+        return null
+      }
+      const variantId = idOf(raw.variant)
+      const validated = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
+      if (!validated.ok) {
+        return null
+      }
+      return {
+        key: keyOf(productId, variantId),
+        priceInPLN: validated.unitPrice,
+        productId,
+        quantity: validated.quantity,
+        title: validated.productNameSnapshot,
+        variantId,
+        variantLabel: validated.variantLabelSnapshot,
+      }
+    }),
+  )
+  const items: CartLine[] = built.filter((line): line is CartLine => line !== null)
 
   return {
     count: items.reduce((n, i) => n + i.quantity, 0),

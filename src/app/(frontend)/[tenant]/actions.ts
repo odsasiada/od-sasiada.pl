@@ -89,20 +89,30 @@ export const placeOrder = async (tenantId: number, contact: Contact): Promise<Pl
   }
 
   // Re-validate authoritatively at money-time — prices CAN move between add and checkout.
+  // Lines are independent DB reads → validate them concurrently, then fold results IN ORDER.
+  const lineResults = await Promise.all(
+    (cart.items as RawCartItem[]).map(async (raw) => {
+      const productId = idOf(raw.product)
+      if (!productId) {
+        return { error: 'Pozycja w koszyku jest nieprawidłowa.', ok: false as const }
+      }
+      const variantId = idOf(raw.variant)
+      const line = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
+      if (!line.ok) {
+        return { error: line.error, ok: false as const }
+      }
+      return { ok: true as const, productId, quantity: line.quantity, unitPrice: line.unitPrice, variantId }
+    }),
+  )
+
   let amount = 0
   const orderItems: { product: number; quantity: number; variant?: null | number }[] = []
-  for (const raw of cart.items as RawCartItem[]) {
-    const productId = idOf(raw.product)
-    if (!productId) {
-      return { error: 'Pozycja w koszyku jest nieprawidłowa.', ok: false }
+  for (const result of lineResults) {
+    if (!result.ok) {
+      return { error: result.error, ok: false }
     }
-    const variantId = idOf(raw.variant)
-    const line = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
-    if (!line.ok) {
-      return { error: line.error, ok: false }
-    }
-    amount += line.unitPrice * line.quantity
-    orderItems.push({ product: productId, quantity: line.quantity, variant: variantId })
+    amount += result.unitPrice * result.quantity
+    orderItems.push({ product: result.productId, quantity: result.quantity, variant: result.variantId })
   }
 
   const minOrderValue = tenant.settings?.minOrderValue ?? 0
@@ -162,22 +172,31 @@ export const reorder = async (tenantId: number, orderId: number): Promise<Reorde
     return { error: 'Nie znaleziono zamówienia.', ok: false }
   }
 
+  // Re-price every order line independently → fan out, then fold results IN ORDER.
+  const repriced = await Promise.all(
+    (order.items ?? []).map(async (raw) => {
+      const productId = idOf(raw.product)
+      if (!productId) {
+        return null
+      }
+      const variantId = idOf(raw.variant)
+      const line = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
+      if (!line.ok) {
+        return null
+      }
+      return { product: productId, quantity: line.quantity, unitPrice: line.unitPrice, variant: variantId }
+    }),
+  )
+
   const lines: { product: number; quantity: number; variant: null | number }[] = []
   let subtotal = 0
   let skipped = 0
-  for (const raw of order.items ?? []) {
-    const productId = idOf(raw.product)
-    if (!productId) {
+  for (const line of repriced) {
+    if (!line) {
       skipped++
       continue
     }
-    const variantId = idOf(raw.variant)
-    const line = await validateLineItem(payload, { productId, quantity: raw.quantity, tenantId, variantId })
-    if (!line.ok) {
-      skipped++
-      continue
-    }
-    lines.push({ product: productId, quantity: line.quantity, variant: variantId })
+    lines.push({ product: line.product, quantity: line.quantity, variant: line.variant })
     subtotal += line.unitPrice * line.quantity
   }
 

@@ -124,15 +124,18 @@ const run = async () => {
   // ── 2) placeOrder reads from cart, not client ────────────────────────────
   // Re-validate cart lines server-side (this is what placeOrder does) → total independent of any
   // request body. A tampered body cannot change this number.
+  const orderLineResults = await Promise.all(
+    (persisted.items ?? []).map((raw) =>
+      validateLineItem(payload, {
+        productId: idOf(raw.product)!,
+        quantity: raw.quantity,
+        tenantId: tenantA!.id,
+        variantId: idOf(raw.variant),
+      }),
+    ),
+  )
   let orderTotal = 0
-  for (const raw of persisted.items ?? []) {
-    const pid = idOf(raw.product)!
-    const r = await validateLineItem(payload, {
-      productId: pid,
-      quantity: raw.quantity,
-      tenantId: tenantA!.id,
-      variantId: idOf(raw.variant),
-    })
+  for (const r of orderLineResults) {
     if (r.ok) {
       orderTotal += r.unitPrice * r.quantity
     }
@@ -198,15 +201,20 @@ const run = async () => {
   const orderLines = [
     { product: productA.id, quantity: 3, staleUnitPrice: STALE_PRICE, variant: null as null | number },
   ]
+  const reorderResults = await Promise.all(
+    orderLines.map(async (l) => ({
+      l,
+      r: await validateLineItem(payload, {
+        productId: l.product,
+        quantity: l.quantity,
+        tenantId: tenantA!.id,
+        variantId: l.variant,
+      }),
+    })),
+  )
   const repriced: { product: number; quantity: number; variant: null | number }[] = []
   let reorderSubtotal = 0
-  for (const l of orderLines) {
-    const r = await validateLineItem(payload, {
-      productId: l.product,
-      quantity: l.quantity,
-      tenantId: tenantA!.id,
-      variantId: l.variant,
-    })
+  for (const { l, r } of reorderResults) {
     if (r.ok) {
       repriced.push({ product: l.product, quantity: r.quantity, variant: l.variant })
       reorderSubtotal += r.unitPrice * r.quantity

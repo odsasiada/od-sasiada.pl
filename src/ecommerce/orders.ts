@@ -57,32 +57,30 @@ const populateSnapshotAndNumber: CollectionBeforeValidateHook = async ({ data, o
   }
 
   // Line item snapshot — copy product name, variant label, and unit price.
+  // Items (and the product/variant lookups within each) are independent reads → fan them out.
   if (Array.isArray(data.items)) {
-    for (const item of data.items) {
-      if (!item?.product) {
-        continue
-      }
+    await Promise.all(
+      data.items.map(async (item) => {
+        if (!item?.product) {
+          return
+        }
 
-      const product = await req.payload.findByID({
-        collection: 'products',
-        depth: 0,
-        disableErrors: true,
-        id: item.product,
-      })
-      item.productNameSnapshot = product?.title ?? null
-      item.unitPriceSnapshot = product?.priceInPLN ?? null
+        const [product, variant] = await Promise.all([
+          req.payload.findByID({ collection: 'products', depth: 0, disableErrors: true, id: item.product }),
+          item.variant
+            ? req.payload.findByID({ collection: 'variants', depth: 0, disableErrors: true, id: item.variant })
+            : Promise.resolve(null),
+        ])
 
-      if (item.variant) {
-        const variant = await req.payload.findByID({
-          collection: 'variants',
-          depth: 0,
-          disableErrors: true,
-          id: item.variant,
-        })
-        item.variantLabelSnapshot = variant?.title ?? null
-        item.unitPriceSnapshot = variant?.priceInPLN ?? item.unitPriceSnapshot
-      }
-    }
+        item.productNameSnapshot = product?.title ?? null
+        item.unitPriceSnapshot = product?.priceInPLN ?? null
+
+        if (item.variant) {
+          item.variantLabelSnapshot = variant?.title ?? null
+          item.unitPriceSnapshot = variant?.priceInPLN ?? item.unitPriceSnapshot
+        }
+      }),
+    )
   }
 
   return data
