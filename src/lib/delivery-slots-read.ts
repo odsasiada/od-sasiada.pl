@@ -67,3 +67,39 @@ export const getAvailableDelivery = async (
   const slots = computeAvailableSlots(mapped, exceptions, new Date())
   return { deliveryEnabled, slots }
 }
+
+/**
+ * Server-side re-validation of a customer-chosen delivery slot (S2.3). The chosen `{ id, date }`
+ * comes from the request body and is NOT trusted — we recompute the tenant's available slots on
+ * a fresh server `now` (inside `getAvailableDelivery`) and confirm the choice is a member. This
+ * reuses the SAME pure `computeAvailableSlots` as the read path (S2.2), so cutoff / past-day /
+ * O7-excluded-date rules can never drift between what the UI offered and what checkout accepts.
+ *
+ * Out of scope (other stories): capacity/race enforcement (S2.7, `reservedCount` still 0) and
+ * persisting the slot onto the order (S2.4). This ONLY validates.
+ */
+export const validateChosenSlot = async (
+  tenantId: number,
+  chosen?: { date: string; id: number | string },
+): Promise<{ error: string; ok: false } | { ok: true }> => {
+  const { deliveryEnabled, slots } = await getAvailableDelivery(tenantId)
+
+  // O8 off: tenant has no windows → nothing to validate; ignore any passed slot.
+  if (!deliveryEnabled) {
+    return { ok: true }
+  }
+
+  // O8 on: a slot is required.
+  if (!chosen) {
+    return { error: 'Wybierz termin dostawy.', ok: false }
+  }
+
+  // Membership check covers cutoff/past/excluded-date/foreign-tenant/capacity<=0 in one go.
+  // id may come back as string via the <select> value → compare as strings.
+  const valid = slots.some((s) => String(s.id) === String(chosen.id) && s.date === chosen.date)
+  if (!valid) {
+    return { error: 'Wybrany termin dostawy jest już niedostępny. Odśwież koszyk i wybierz inny termin.', ok: false }
+  }
+
+  return { ok: true }
+}

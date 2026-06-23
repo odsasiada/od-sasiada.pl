@@ -11,6 +11,7 @@ import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
 import { validateLineItem } from '@/lib/cart-validation'
+import { validateChosenSlot } from '@/lib/delivery-slots-read'
 import { formatPLN } from '@/lib/money'
 import config from '@/payload.config'
 
@@ -72,16 +73,15 @@ const findCart = async (payload: Awaited<ReturnType<typeof getPayload>>, custome
  * Wymaga zalogowanego klienta (wymuszony login). Pozycje i ceny czytane SERWEROWO z `carts` —
  * ciało żądania klienta nie może wpłynąć na zawartość ani sumę zamówienia.
  *
- * `deliverySlot` (S2.2): wybór slotu jest tu tylko PRZYJMOWANY (carry-only), by S2.3/S2.4 miały
- * na czym budować — NIE jest jeszcze walidowany (cutoff = S2.3, capacity = S2.7) ani zapisywany
- * do zamówienia (relacja `deliverySlot` na `orders` = S2.4). Typ inline (gotcha hydratacji).
+ * `deliverySlot` (S2.2/S2.3): wybór slotu z klienta jest RE-walidowany serwerowo (`validateChosenSlot`,
+ * świeży `now`) przed utworzeniem zamówienia — klientowi nie ufamy (R-S2.2). Capacity/wyścig = S2.7
+ * (`reservedCount` = 0); zapis snapshotu slotu do zamówienia = S2.4. Typ inline (gotcha hydratacji).
  */
 export const placeOrder = async (
   tenantId: number,
   contact: Contact,
   deliverySlot?: { date: string; id: number },
 ): Promise<PlaceOrderResult> => {
-  void deliverySlot // carry-only w S2.2 — walidacja/zapis w S2.3/S2.4
   const payload = await getPayload({ config })
 
   const customer = await resolveCustomer(payload, tenantId)
@@ -132,6 +132,14 @@ export const placeOrder = async (
       error: `Minimalna kwota zamówienia to ${formatPLN(minOrderValue)} (masz ${formatPLN(amount)}).`,
       ok: false,
     }
+  }
+
+  // Re-validate the chosen delivery slot SERVER-SIDE on a fresh `now` — the client's { id, date }
+  // is untrusted (R-S2.2). Same pure logic as the read path, so no drift. PRZED `payload.create`,
+  // by odrzucone zamówienie nie powstało i koszyk pozostał nietknięty. (capacity/zapis = S2.7/S2.4)
+  const slotCheck = await validateChosenSlot(tenantId, deliverySlot)
+  if (!slotCheck.ok) {
+    return { error: slotCheck.error, ok: false }
   }
 
   const order = await payload.create({
