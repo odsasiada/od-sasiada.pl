@@ -19,12 +19,12 @@ const ORDER_STATUS_SEQUENCE = ['new', 'confirmed', 'preparing', 'out_for_deliver
 export type OrderStatusValue = (typeof ORDER_STATUS_SEQUENCE)[number] | 'cancelled'
 
 export const ORDER_STATUS_LABELS: Record<OrderStatusValue, string> = {
-  cancelled: 'Cancelled',
-  confirmed: 'Confirmed',
-  delivered: 'Delivered',
-  new: 'New',
-  out_for_delivery: 'Out for delivery',
-  preparing: 'Preparing',
+  cancelled: 'Anulowane',
+  confirmed: 'Potwierdzone',
+  delivered: 'Dostarczone',
+  new: 'Nowe',
+  out_for_delivery: 'W dostawie',
+  preparing: 'W przygotowaniu',
 }
 
 const orderStatusOptions: { label: string; value: OrderStatusValue }[] = (

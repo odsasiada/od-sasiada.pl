@@ -31,12 +31,22 @@ type OrderDoc = {
     postalCode?: null | string
   } | null
   status?: null | string
+  // S2.4: `tenant` bywa surowym id lub populowanym obiektem (`depth>0`). Normalizujemy przez `idOf`.
+  tenant?: null | number | { id: number }
+}
+
+/** Normalizuje `tenant` (id albo populowany obiekt) do liczbowego id. */
+const idOf = (t: OrderDoc['tenant']): null | number => {
+  if (t == null) {
+    return null
+  }
+  return typeof t === 'object' ? t.id : t
 }
 
 const itemsTable = (items: OrderItem[]): string => {
   const rows = items
     .map((i) => {
-      const name = i.variantLabelSnapshot || i.productNameSnapshot || 'Product'
+      const name = i.variantLabelSnapshot || i.productNameSnapshot || 'Produkt'
       const line = (i.unitPriceSnapshot ?? 0) * i.quantity
       return `<tr><td style="padding:4px 8px">${i.quantity} ×</td><td style="padding:4px 8px">${name}</td><td style="padding:4px 8px;text-align:right">${zl(line)}</td></tr>`
     })
@@ -48,12 +58,12 @@ const addressBlock = (a: OrderDoc['shippingAddress']): string => {
   if (!a) {
     return ''
   }
-  return `<p style="color:#555">Delivery: ${a.firstName ?? ''} ${a.lastName ?? ''}, ${a.addressLine1 ?? ''}, ${a.postalCode ?? ''} ${a.city ?? ''}${a.phone ? `, tel. ${a.phone}` : ''}</p>`
+  return `<p style="color:#555">Adres dostawy: ${a.firstName ?? ''} ${a.lastName ?? ''}, ${a.addressLine1 ?? ''}, ${a.postalCode ?? ''} ${a.city ?? ''}${a.phone ? `, tel. ${a.phone}` : ''}</p>`
 }
 
-// S2.4: delivery-term block built from the order's slot snapshot. Rendered only when a slot was
-// booked (O8 tenants without windows → no block). Uses the ready `label`; falls back to date +
-// window if absent. (Full PL-ization of the whole email is S2.6 — here we only add slot data.)
+// S2.4/S2.6: blok terminu dostawy zbudowany ze snapshotu slotu zamówienia. Renderowany tylko gdy
+// slot został zarezerwowany (O8: tenanci bez okien → brak bloku). Preferuje gotowe `label`
+// (zbudowane przez `formatSlotLabel` w S2.4 — jedno źródło formatowania); fallback z daty + okna.
 const slotBlock = (s: OrderDoc['deliverySlot']): string => {
   if (!s?.date) {
     return ''
@@ -62,42 +72,64 @@ const slotBlock = (s: OrderDoc['deliverySlot']): string => {
   return `<p style="color:#555">Termin dostawy: ${text}</p>`
 }
 
-/** Order placement confirmation email. */
+/**
+ * S2.6: blok z telefonem kontaktowym dostawcy (`tenant.settings.contactPhone`).
+ * Best-effort (NFR4): `disableErrors: true` + obsługa `null` — odczyt NIE może wywrócić maila.
+ * Brak tenanta / brak telefonu → pusty blok (sekcja pominięta).
+ */
+const tenantContactBlock = async (payload: BasePayload, tenant: OrderDoc['tenant']): Promise<string> => {
+  const tenantId = idOf(tenant)
+  if (tenantId == null) {
+    return ''
+  }
+  const t = await payload.findByID({ collection: 'tenants', depth: 0, disableErrors: true, id: tenantId })
+  const phone = t?.settings?.contactPhone
+  if (!phone) {
+    return ''
+  }
+  return `<p style="color:#555">Kontakt do dostawcy: tel. ${phone}</p>`
+}
+
+/** Mail potwierdzający złożenie zamówienia (po polsku, ze slotem i kontaktem dostawcy). */
 export const sendOrderConfirmation = async (payload: BasePayload, doc: OrderDoc): Promise<void> => {
   if (!doc.customerEmail) {
     return
   }
+  const contact = await tenantContactBlock(payload, doc.tenant)
   const html = `
     <div style="font-family:system-ui,sans-serif;color:#1f2421">
-      <h2>Thank you for your order ${doc.orderNumber ?? ''}</h2>
-      <p>We have received your order. We will call to confirm delivery. Payment by cash/bank transfer on delivery.</p>
+      <h2>Dziękujemy za zamówienie ${doc.orderNumber ?? ''}</h2>
+      <p>Otrzymaliśmy Twoje zamówienie. Zadzwonimy, aby potwierdzić dostawę. Płatność gotówką lub przelewem przy odbiorze.</p>
       ${itemsTable(doc.items ?? [])}
-      <p style="font-weight:700;margin-top:12px">Total: ${zl(doc.amount ?? 0)}</p>
+      <p style="font-weight:700;margin-top:12px">Razem: ${zl(doc.amount ?? 0)}</p>
       ${slotBlock(doc.deliverySlot)}
       ${addressBlock(doc.shippingAddress)}
+      ${contact}
     </div>`
   await payload.sendEmail({
     html,
-    subject: `Order confirmation ${doc.orderNumber ?? ''}`,
+    subject: `Potwierdzenie zamówienia ${doc.orderNumber ?? ''}`,
     to: doc.customerEmail,
   })
 }
 
-/** Order status change email. */
+/** Mail o zmianie statusu zamówienia (po polsku, z etykietą statusu PL i kontaktem dostawcy). */
 export const sendStatusChange = async (payload: BasePayload, doc: OrderDoc): Promise<void> => {
   if (!doc.customerEmail) {
     return
   }
   const label = ORDER_STATUS_LABELS[doc.status as OrderStatusValue] ?? doc.status
+  const contact = await tenantContactBlock(payload, doc.tenant)
   const html = `
     <div style="font-family:system-ui,sans-serif;color:#1f2421">
-      <h2>Order ${doc.orderNumber ?? ''}</h2>
-      <p>Your order status has changed to: <strong>${label}</strong>.</p>
-      <p style="font-weight:700">Total: ${zl(doc.amount ?? 0)}</p>
+      <h2>Zamówienie ${doc.orderNumber ?? ''}</h2>
+      <p>Status Twojego zamówienia zmienił się na: <strong>${label}</strong>.</p>
+      <p style="font-weight:700">Razem: ${zl(doc.amount ?? 0)}</p>
+      ${contact}
     </div>`
   await payload.sendEmail({
     html,
-    subject: `Order ${doc.orderNumber ?? ''} — ${label}`,
+    subject: `Zamówienie ${doc.orderNumber ?? ''} — ${label}`,
     to: doc.customerEmail,
   })
 }
