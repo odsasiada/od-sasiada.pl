@@ -202,6 +202,8 @@ export default buildConfig({
 
   secret: env.PAYLOAD_SECRET,
 
+  serverURL: env.SERVER_URL,
+
   // sharp ^0.35 ships a broader constructor signature than Payload's bundled `SharpDependency`
   // type (pinned to sharp 0.32). Runtime is fully compatible; cast to the type buildConfig expects.
   sharp: sharp as Parameters<typeof buildConfig>[0]['sharp'],

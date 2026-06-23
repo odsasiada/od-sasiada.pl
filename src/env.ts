@@ -18,6 +18,7 @@ export const env = createEnv({
     EMAIL_SMTP_USER: process.env.EMAIL_SMTP_USER,
     EMAIL_TLS_REJECT_UNAUTHORIZED: process.env.EMAIL_TLS_REJECT_UNAUTHORIZED,
     PAYLOAD_SECRET: process.env.PAYLOAD_SECRET,
+    SERVER_URL: process.env.SERVER_URL,
   },
 
   server: {
@@ -37,5 +38,6 @@ export const env = createEnv({
     EMAIL_SMTP_USER: z.email(),
     EMAIL_TLS_REJECT_UNAUTHORIZED: z.stringbool().default(true),
     PAYLOAD_SECRET: z.string().min(32),
+    SERVER_URL: z.url().default('http://localhost:3000'),
   },
 })
