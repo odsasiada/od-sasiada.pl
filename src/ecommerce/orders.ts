@@ -12,6 +12,7 @@ import {
   ORDER_STATUS_LABELS,
   type OrderStatusValue,
   orderStatusField,
+  shouldEmailStatusChange,
 } from '@/ecommerce/order-status'
 import { countActiveOrdersForOccurrence, occurrenceOf } from '@/lib/slot-capacity'
 
@@ -196,7 +197,12 @@ const notifyOnOrderChange: CollectionAfterChangeHook = ({ doc, operation, previo
     sendOrderConfirmation(req.payload, doc).catch((err) =>
       req.payload.logger.error(`Order confirmation email ${doc.orderNumber} not sent: ${err}`),
     )
-  } else if (operation === 'update' && previousDoc?.status && doc.status !== previousDoc.status) {
+  } else if (
+    operation === 'update' &&
+    previousDoc?.status &&
+    shouldEmailStatusChange(previousDoc.status as OrderStatusValue, doc.status as OrderStatusValue)
+  ) {
+    // S2.5: mail tylko na milestone'ach „do przodu" (O5) + cisza przy cofnięciu (O6/R-S2.3).
     sendStatusChange(req.payload, doc).catch((err) =>
       req.payload.logger.error(`Order status email ${doc.orderNumber} not sent: ${err}`),
     )

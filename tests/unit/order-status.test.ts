@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
-import { isAllowedTransition, type OrderStatusValue } from '@/ecommerce/order-status'
+import {
+  isAllowedTransition,
+  type OrderStatusValue,
+  STATUS_EMAIL_MILESTONES,
+  shouldEmailStatusChange,
+} from '@/ecommerce/order-status'
 
 /**
  * Order status state machine (S1.5) — pure logic, no DB.
@@ -51,5 +56,45 @@ describe('order status machine — isAllowedTransition', () => {
     expect(isAllowedTransition('cancelled', 'confirmed')).toBe(false)
     expect(isAllowedTransition('cancelled', 'preparing')).toBe(false)
     expect(isAllowedTransition('cancelled', 'delivered')).toBe(false)
+  })
+})
+
+/**
+ * S2.5: predykat wyzwalania maila statusowego — mail tylko na milestone'ach „do przodu" (O5),
+ * cisza przy cofnięciu (O6/R-S2.3), brak duplikatów (AC#3). Czysta logika, bez DB/SMTP.
+ */
+describe('order status emails — shouldEmailStatusChange', () => {
+  it('defines the email milestone set (O5)', () => {
+    expect(STATUS_EMAIL_MILESTONES).toEqual(['confirmed', 'out_for_delivery', 'delivered', 'cancelled'])
+    expect(STATUS_EMAIL_MILESTONES).not.toContain('new')
+    expect(STATUS_EMAIL_MILESTONES).not.toContain('preparing')
+  })
+
+  it('emails on forward milestones', () => {
+    expect(shouldEmailStatusChange('new', 'confirmed')).toBe(true)
+    expect(shouldEmailStatusChange('preparing', 'out_for_delivery')).toBe(true)
+    expect(shouldEmailStatusChange('out_for_delivery', 'delivered')).toBe(true)
+  })
+
+  it('does not email on non-milestone targets', () => {
+    expect(shouldEmailStatusChange('new', 'preparing')).toBe(false)
+    expect(shouldEmailStatusChange('confirmed', 'preparing')).toBe(false)
+    expect(shouldEmailStatusChange('cancelled', 'new')).toBe(false) // reaktywacja
+  })
+
+  it('stays silent on rollbacks to a milestone (O6)', () => {
+    expect(shouldEmailStatusChange('delivered', 'out_for_delivery')).toBe(false)
+    expect(shouldEmailStatusChange('out_for_delivery', 'confirmed')).toBe(false)
+  })
+
+  it('emails on cancellation from any non-delivered state', () => {
+    expect(shouldEmailStatusChange('new', 'cancelled')).toBe(true)
+    expect(shouldEmailStatusChange('confirmed', 'cancelled')).toBe(true)
+    expect(shouldEmailStatusChange('out_for_delivery', 'cancelled')).toBe(true)
+  })
+
+  it('does not email when status is unchanged (no duplicates)', () => {
+    expect(shouldEmailStatusChange('confirmed', 'confirmed')).toBe(false)
+    expect(shouldEmailStatusChange('delivered', 'delivered')).toBe(false)
   })
 })

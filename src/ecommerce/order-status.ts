@@ -57,6 +57,41 @@ export const isAllowedTransition = (from: OrderStatusValue, to: OrderStatusValue
   return toIdx === fromIdx + 1 || toIdx < fromIdx
 }
 
+/**
+ * S2.5: statusy, których osiągnięcie „do przodu" jest milestone'em wartym maila do klienta (O5).
+ * `preparing` i `new` celowo pominięte (reaktywacja `cancelled→new` też nie wysyła).
+ */
+export const STATUS_EMAIL_MILESTONES: OrderStatusValue[] = ['confirmed', 'out_for_delivery', 'delivered', 'cancelled']
+
+/**
+ * S2.5: czy zmiana `from → to` ma wyzwolić maila statusowego (decyzje O5/O6).
+ *
+ * Mail leci WYŁĄCZNIE na milestone'ach „do przodu":
+ *  - brak zmiany (`from === to`) → false (brak duplikatów),
+ *  - `to` poza milestone'ami (np. `new`, `preparing`, reaktywacja `cancelled→new`) → false,
+ *  - `to === 'cancelled'` → true (zdarzenie anulowania; automat i tak zabrania `delivered→cancelled`),
+ *  - milestone w sekwencji (`confirmed`/`out_for_delivery`/`delivered`) → true tylko gdy ruch
+ *    do przodu (`seq.indexOf(to) > seq.indexOf(from)`); cofnięcie → false (cisza, R-S2.3).
+ *
+ * Czysta funkcja (bez I/O) — reużywa `ORDER_STATUS_SEQUENCE` jako jedyne źródło kolejności.
+ */
+export const shouldEmailStatusChange = (from: OrderStatusValue, to: OrderStatusValue): boolean => {
+  if (from === to) {
+    return false
+  }
+  if (!STATUS_EMAIL_MILESTONES.includes(to)) {
+    return false
+  }
+  if (to === 'cancelled') {
+    return true
+  }
+  const fromIdx = ORDER_STATUS_SEQUENCE.indexOf(from as (typeof ORDER_STATUS_SEQUENCE)[number])
+  const toIdx = ORDER_STATUS_SEQUENCE.indexOf(to as (typeof ORDER_STATUS_SEQUENCE)[number])
+  // `from === 'cancelled'` ma indexOf === -1, ale automat zabrania `cancelled→` milestone (poza `new`),
+  // więc ten przypadek tu nie wystąpi. Ruch do przodu w sekwencji:
+  return toIdx > fromIdx
+}
+
 /** `status` field with our values (overrides the plugin field). */
 export const orderStatusField: Field = {
   admin: { position: 'sidebar' },
