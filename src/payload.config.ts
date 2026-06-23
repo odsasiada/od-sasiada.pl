@@ -23,6 +23,7 @@ import {
   publicAccess,
 } from '@/access'
 import { Customers } from '@/collections/Customers'
+import { DeliveryDateExceptions } from '@/collections/DeliveryDateExceptions'
 import { DeliverySlots } from '@/collections/DeliverySlots'
 import { Media } from '@/collections/Media'
 import { Tenants } from '@/collections/Tenants'
@@ -50,7 +51,7 @@ export default buildConfig({
     user: Users.slug,
   },
 
-  collections: [Users, Tenants, Customers, Media, DeliverySlots],
+  collections: [Users, Tenants, Customers, Media, DeliverySlots, DeliveryDateExceptions],
 
   db: postgresAdapter({
     pool: {
@@ -167,6 +168,8 @@ export default buildConfig({
         addresses: {},
         carts: {},
         customers: {},
+        // EPIC-2 (S2.8): per-tenant unavailable delivery dates — tenant stamp + panel isolation.
+        'delivery-date-exceptions': {},
         // EPIC-2 (S2.1): per-tenant delivery windows — tenant stamp + panel isolation.
         'delivery-slots': {},
         // EPIC-3 (SPIKE-S3): per-tenant media library — tenant stamp + panel isolation.
