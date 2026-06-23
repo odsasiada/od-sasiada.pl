@@ -11,6 +11,7 @@ import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
 import { validateLineItem } from '@/lib/cart-validation'
+import { formatSlotLabel } from '@/lib/delivery-slots'
 import { validateChosenSlot } from '@/lib/delivery-slots-read'
 import { formatPLN } from '@/lib/money'
 import { reserveSlotAndCreateOrder } from '@/lib/slot-reservation'
@@ -163,11 +164,22 @@ export const placeOrder = async (
   }
 
   let order: { id: number; orderNumber?: string }
-  if (deliverySlot) {
+  if (deliverySlot && slotCheck.slot) {
     // S2.7: race-safe capacity reservation — recount + create in one transaction, serialized
     // per occurrence by an advisory lock. If the occurrence filled up between the read-path
     // check and now, the order is NOT created and the cart stays intact.
-    const reserved = await reserveSlotAndCreateOrder(payload, orderData, deliverySlot)
+    //
+    // S2.4: the slot snapshot is built from the VALIDATED occurrence (`slotCheck.slot`), never
+    // re-read from the DB — one source of truth, no race/drift. `label` uses the shared
+    // `formatSlotLabel` so the persisted term matches exactly what the picker offered (AC#6).
+    const matched = slotCheck.slot
+    const reserved = await reserveSlotAndCreateOrder(payload, orderData, {
+      date: matched.date,
+      id: matched.id,
+      label: formatSlotLabel(matched),
+      windowEnd: matched.windowEnd,
+      windowStart: matched.windowStart,
+    })
     if (!reserved.ok) {
       return { error: reserved.error, ok: false }
     }

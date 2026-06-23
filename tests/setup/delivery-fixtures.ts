@@ -25,6 +25,51 @@ export type DeliveryFixtures = {
   trackException: (id: number) => void
 }
 
+/**
+ * Sample order payload for a single 1× line of `fx.productA`, shipped to a stub address. Shared by
+ * the capacity and slot-snapshot suites so the order shape lives in ONE place (no per-test drift).
+ */
+export const sampleOrderData = (fx: TenantFixtures, customerId: number, email = 'order@example.com') => ({
+  amount: fx.productA.priceInPLN,
+  currency: 'PLN' as const,
+  customer: customerId,
+  customerEmail: email,
+  items: [{ product: fx.productA.id, quantity: 1 }],
+  shippingAddress: {
+    addressLine1: 'ul. Testowa 1',
+    city: 'Kartuzy',
+    country: 'PL',
+    firstName: 'A',
+    lastName: 'B',
+    phone: '600100200',
+    postalCode: '83-300',
+  },
+  status: 'new' as const,
+  tenant: fx.tenantA.id,
+})
+
+/**
+ * Shared teardown for order-creating EPIC-2 suites: best-effort delete every created order (newest
+ * first), then the delivery + tenant fixtures in dependency order. One place so the cleanup
+ * ordering can't drift between tests.
+ */
+export const teardownOrders = async (
+  payload: Payload,
+  orderIds: number[],
+  df?: DeliveryFixtures,
+  fx?: TenantFixtures,
+): Promise<void> => {
+  for (const id of [...orderIds].reverse()) {
+    try {
+      await payload.delete({ collection: 'orders', id, overrideAccess: true })
+    } catch {
+      /* best-effort */
+    }
+  }
+  await df?.cleanup()
+  await fx?.cleanup()
+}
+
 export const createDeliveryFixtures = async (
   payload: Payload,
   fx: TenantFixtures,

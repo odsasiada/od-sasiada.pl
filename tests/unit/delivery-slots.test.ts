@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 
-import { computeAvailableSlots, type DateException, type DeliverySlot, type Weekday } from '@/lib/delivery-slots'
+import {
+  computeAvailableSlots,
+  type DateException,
+  type DeliverySlot,
+  formatSlotLabel,
+  type Weekday,
+} from '@/lib/delivery-slots'
 
 /**
  * SPIKE-S2 — pure cutoff/availability math for delivery slots (R-S2.1: timezone + DST).
@@ -181,6 +187,20 @@ describe('computeAvailableSlots — per-occurrence reservedFor (S2.7)', () => {
     const out = computeAvailableSlots([slot], NO_EXCEPTIONS, now, undefined, reservedFor)
     expect(out.find((s) => s.date === '2026-06-22')?.remaining).toBe(2)
     expect(out.find((s) => s.date === '2026-06-29')?.remaining).toBe(4)
+  })
+})
+
+describe('formatSlotLabel — single source of truth for the PL slot label (AC#6)', () => {
+  it('formats a Monday occurrence as "pon. DD.MM.YYYY, HH:mm–HH:mm"', () => {
+    expect(formatSlotLabel({ date: '2026-06-22', weekday: MON, windowEnd: '12:00', windowStart: '08:00' })).toBe(
+      'pon. 22.06.2026, 08:00–12:00',
+    )
+  })
+
+  it('uses the Sunday=0 weekday index', () => {
+    expect(formatSlotLabel({ date: '2026-06-21', weekday: SUN, windowEnd: '16:00', windowStart: '10:00' })).toBe(
+      'niedz. 21.06.2026, 10:00–16:00',
+    )
   })
 })
 

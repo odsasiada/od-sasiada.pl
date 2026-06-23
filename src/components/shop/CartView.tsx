@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { type Contact, placeOrder } from '@/app/(frontend)/[tenant]/actions'
 import { useCart } from '@/components/shop/cart-store'
+import { formatSlotLabel } from '@/lib/delivery-slots'
 import { formatPLN, type SavedAddress } from '@/lib/money'
 
 const EMPTY_CONTACT: Contact = {
@@ -17,15 +18,6 @@ const EMPTY_CONTACT: Contact = {
   lastName: '',
   phone: '',
   postalCode: '',
-}
-
-// 0 = niedziela … 6 = sobota (zgodnie z AvailableSlot.weekday / JS getDay()).
-const WEEKDAY_PL = ['niedz.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.']
-
-/** "2026-06-23" → "23.06.2026"; etykieta slotu PL, np. "pon. 23.06.2026, 08:00–12:00". */
-const slotLabel = (slot: AvailableSlot): string => {
-  const [year, month, day] = slot.date.split('-')
-  return `${WEEKDAY_PL[slot.weekday]} ${day}.${month}.${year}, ${slot.windowStart}–${slot.windowEnd}`
 }
 
 /** Encodes a slot occurrence as "id__date" so the <select> value carries BOTH (S2.4 needs date). */
@@ -204,7 +196,7 @@ export const CartView = ({
                       <option value=''>— wybierz termin —</option>
                       {availableSlots.map((s) => (
                         <option key={slotValue(s)} value={slotValue(s)}>
-                          {slotLabel(s)}
+                          {formatSlotLabel(s)}
                         </option>
                       ))}
                     </select>

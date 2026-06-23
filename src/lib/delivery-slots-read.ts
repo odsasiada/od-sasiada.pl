@@ -96,16 +96,19 @@ export const getAvailableDelivery = async (
  * reuses the SAME pure `computeAvailableSlots` as the read path (S2.2), so cutoff / past-day /
  * O7-excluded-date rules can never drift between what the UI offered and what checkout accepts.
  *
- * Out of scope (other stories): capacity/race enforcement (S2.7, `reservedCount` still 0) and
- * persisting the slot onto the order (S2.4). This ONLY validates.
+ * Out of scope (other stories): capacity/race enforcement (S2.7, `reservedCount` still 0).
+ *
+ * Returns the MATCHED `AvailableSlot` on success (S2.4): it carries `windowStart/windowEnd/date/
+ * weekday`, which is the single source `placeOrder` uses to build the order's slot snapshot — so
+ * the snapshot is never re-read from the DB (no race/drift; the validated set already has it).
  */
 export const validateChosenSlot = async (
   tenantId: number,
   chosen?: { date: string; id: number | string },
-): Promise<{ error: string; ok: false } | { ok: true }> => {
+): Promise<{ error: string; ok: false } | { ok: true; slot?: AvailableSlot }> => {
   const { deliveryEnabled, slots } = await getAvailableDelivery(tenantId)
 
-  // O8 off: tenant has no windows → nothing to validate; ignore any passed slot.
+  // O8 off: tenant has no windows → nothing to validate; ignore any passed slot (no snapshot).
   if (!deliveryEnabled) {
     return { ok: true }
   }
@@ -117,10 +120,10 @@ export const validateChosenSlot = async (
 
   // Membership check covers cutoff/past/excluded-date/foreign-tenant/capacity<=0 in one go.
   // id may come back as string via the <select> value → compare as strings.
-  const valid = slots.some((s) => String(s.id) === String(chosen.id) && s.date === chosen.date)
-  if (!valid) {
+  const matched = slots.find((s) => String(s.id) === String(chosen.id) && s.date === chosen.date)
+  if (!matched) {
     return { error: 'Wybrany termin dostawy jest już niedostępny. Odśwież koszyk i wybierz inny termin.', ok: false }
   }
 
-  return { ok: true }
+  return { ok: true, slot: matched }
 }

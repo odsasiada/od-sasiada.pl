@@ -14,6 +14,12 @@ type OrderItem = {
 type OrderDoc = {
   amount?: null | number
   customerEmail?: null | string
+  deliverySlot?: {
+    date?: null | string
+    label?: null | string
+    windowEnd?: null | string
+    windowStart?: null | string
+  } | null
   items?: null | OrderItem[]
   orderNumber?: null | string
   shippingAddress?: {
@@ -45,6 +51,17 @@ const addressBlock = (a: OrderDoc['shippingAddress']): string => {
   return `<p style="color:#555">Delivery: ${a.firstName ?? ''} ${a.lastName ?? ''}, ${a.addressLine1 ?? ''}, ${a.postalCode ?? ''} ${a.city ?? ''}${a.phone ? `, tel. ${a.phone}` : ''}</p>`
 }
 
+// S2.4: delivery-term block built from the order's slot snapshot. Rendered only when a slot was
+// booked (O8 tenants without windows → no block). Uses the ready `label`; falls back to date +
+// window if absent. (Full PL-ization of the whole email is S2.6 — here we only add slot data.)
+const slotBlock = (s: OrderDoc['deliverySlot']): string => {
+  if (!s?.date) {
+    return ''
+  }
+  const text = s.label ?? `${s.date}${s.windowStart ? `, ${s.windowStart}–${s.windowEnd ?? ''}` : ''}`
+  return `<p style="color:#555">Termin dostawy: ${text}</p>`
+}
+
 /** Order placement confirmation email. */
 export const sendOrderConfirmation = async (payload: BasePayload, doc: OrderDoc): Promise<void> => {
   if (!doc.customerEmail) {
@@ -56,6 +73,7 @@ export const sendOrderConfirmation = async (payload: BasePayload, doc: OrderDoc)
       <p>We have received your order. We will call to confirm delivery. Payment by cash/bank transfer on delivery.</p>
       ${itemsTable(doc.items ?? [])}
       <p style="font-weight:700;margin-top:12px">Total: ${zl(doc.amount ?? 0)}</p>
+      ${slotBlock(doc.deliverySlot)}
       ${addressBlock(doc.shippingAddress)}
     </div>`
   await payload.sendEmail({

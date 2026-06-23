@@ -26,6 +26,13 @@ type ShippingAddress = {
   postalCode?: null | string
 }
 
+type DeliverySlotSnapshot = {
+  date?: null | string
+  label?: null | string
+  windowEnd?: null | string
+  windowStart?: null | string
+}
+
 export default async function MyOrderDetailPage({ params }: { params: Promise<{ id: string; tenant: string }> }) {
   const { id, tenant: slug } = await params
   const tenant = await getTenantBySlug(slug)
@@ -76,11 +83,13 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
 
   const order = orders.docs[0]
   const o = order as typeof order & {
+    deliverySlot?: null | DeliverySlotSnapshot
     items?: null | OrderItem[]
     orderNumber?: string
     shippingAddress?: null | ShippingAddress
   }
   const address = o.shippingAddress
+  const slot = o.deliverySlot
 
   return (
     <main className='container'>
@@ -109,6 +118,14 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
             </li>
           ))}
         </ul>
+
+        {slot?.date ? (
+          <div className='tenant-meta'>
+            <strong>Termin dostawy</strong>
+            <br />
+            {slot.label ?? `${slot.date}${slot.windowStart ? `, ${slot.windowStart}–${slot.windowEnd ?? ''}` : ''}`}
+          </div>
+        ) : null}
 
         {address ? (
           <div className='tenant-meta'>

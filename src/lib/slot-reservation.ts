@@ -19,11 +19,32 @@ import { countActiveOrdersForOccurrence } from '@/lib/slot-capacity'
  * the seat for free. Capacity is per OCCURRENCE (slot + date), not per recurring slot.
  */
 
-type DeliveryOccurrence = { date: string; id: number | string }
+/**
+ * The delivery occurrence being booked. `slot` + `date` drive the per-occurrence capacity recount
+ * and advisory lock; the optional presentational fields (`windowStart/windowEnd/label`, S2.4) are
+ * snapshotted onto the order verbatim from the validated `AvailableSlot` — a COPY at create time,
+ * immune to later config changes (B1). All of it lands in the order's `deliverySlot` group.
+ */
+type DeliveryOccurrence = {
+  date: string
+  id: number | string
+  label?: string
+  windowEnd?: string
+  windowStart?: string
+}
 
 type AdapterWithSessions = {
   sessions: Record<string, { db: { execute: (query: unknown) => Promise<unknown> } }>
 }
+
+/** The order's `deliverySlot` group value built from the booked occurrence (snapshot, S2.4). */
+const deliverySlotSnapshot = (occurrence: DeliveryOccurrence) => ({
+  date: occurrence.date,
+  label: occurrence.label,
+  slot: Number(occurrence.id),
+  windowEnd: occurrence.windowEnd,
+  windowStart: occurrence.windowStart,
+})
 
 export const reserveSlotAndCreateOrder = async (
   payload: Payload,
@@ -37,7 +58,7 @@ export const reserveSlotAndCreateOrder = async (
     payload.logger.warn('reserveSlotAndCreateOrder: no transaction support — capacity check is NOT race-safe')
     const order = await payload.create({
       collection: 'orders',
-      data: { ...orderData, deliverySlot: { date: occurrence.date, slot: Number(occurrence.id) } } as never,
+      data: { ...orderData, deliverySlot: deliverySlotSnapshot(occurrence) } as never,
     })
     return { ok: true, order: order as { id: number; orderNumber?: string } }
   }
@@ -68,7 +89,7 @@ export const reserveSlotAndCreateOrder = async (
 
     const order = await payload.create({
       collection: 'orders',
-      data: { ...orderData, deliverySlot: { date: occurrence.date, slot: Number(occurrence.id) } } as never,
+      data: { ...orderData, deliverySlot: deliverySlotSnapshot(occurrence) } as never,
       req: { transactionID },
     })
 

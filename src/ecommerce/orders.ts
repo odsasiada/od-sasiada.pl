@@ -25,11 +25,16 @@ import { countActiveOrdersForOccurrence, occurrenceOf } from '@/lib/slot-capacit
  */
 
 /**
- * EPIC-2 (S2.7): the chosen delivery occurrence persisted on the order. `slot` + `date` are the
- * MINIMUM needed by the capacity recount (one source of truth = active orders, keyed per
- * occurrence: slot + date). `date` is a queryable "YYYY-MM-DD" text so `payload.count` can filter
- * `deliverySlot.date`. S2.4 will extend THIS SAME group with presentational snapshot fields
- * (windowStart/windowEnd/label) — do not create a competing field.
+ * EPIC-2: the chosen delivery occurrence persisted on the order as a read-only SNAPSHOT.
+ *
+ * `slot` + `date` (S2.7) are the MINIMUM needed by the capacity recount (one source of truth =
+ * active orders, keyed per occurrence: slot + date). `date` is a queryable "YYYY-MM-DD" text so
+ * `payload.count` can filter `deliverySlot.date`.
+ *
+ * `windowStart` / `windowEnd` / `label` (S2.4) are the presentational snapshot — a COPY of the
+ * validated occurrence taken at order creation, immune to later config changes (B1). They are NOT
+ * a live join: editing/deleting the `delivery-slots` record never rewrites a placed order's term.
+ * All fields are readOnly in the admin and optional (orders without a slot exist — O8).
  */
 const DELIVERY_SLOT_FIELD: Field = {
   admin: { readOnly: true },
@@ -44,6 +49,24 @@ const DELIVERY_SLOT_FIELD: Field = {
       admin: { description: 'Dzień wystąpienia (RRRR-MM-DD, Europe/Warsaw)' },
       label: 'Data dostawy',
       name: 'date',
+      type: 'text',
+    },
+    {
+      admin: { description: 'Początek okna (GG:MM, Europe/Warsaw)' },
+      label: 'Początek okna',
+      name: 'windowStart',
+      type: 'text',
+    },
+    {
+      admin: { description: 'Koniec okna (GG:MM, Europe/Warsaw)' },
+      label: 'Koniec okna',
+      name: 'windowEnd',
+      type: 'text',
+    },
+    {
+      admin: { description: 'Etykieta czytelna dla człowieka (np. „pon. 23.06.2026, 08:00–12:00”)' },
+      label: 'Etykieta terminu',
+      name: 'label',
       type: 'text',
     },
   ],

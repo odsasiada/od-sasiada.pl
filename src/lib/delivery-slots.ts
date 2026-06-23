@@ -71,6 +71,27 @@ export type AvailableSlot = {
   remaining: number
 }
 
+/** Polish weekday short names, indexed 0=Sunday .. 6=Saturday (matches `Weekday`). */
+const WEEKDAY_PL = ['niedz.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.'] as const
+
+/**
+ * SINGLE SOURCE OF TRUTH for the human-readable slot label (AC#6). Used by the order snapshot
+ * (`placeOrder`), the front-end order detail, the confirmation email, and the cart picker
+ * (`CartView`) — so the picked label and the persisted snapshot can never drift.
+ *
+ * "2026-06-23" + Monday + 08:00–12:00 → "pon. 23.06.2026, 08:00–12:00". Pure: no date library
+ * (SPIKE-S2), no I/O, no `Date.now()`.
+ */
+export const formatSlotLabel = (s: {
+  date: string
+  weekday: Weekday
+  windowEnd: string
+  windowStart: string
+}): string => {
+  const [year, month, day] = s.date.split('-')
+  return `${WEEKDAY_PL[s.weekday]} ${day}.${month}.${year}, ${s.windowStart}–${s.windowEnd}`
+}
+
 /** How many future days the recurring schedule is projected forward into concrete occurrences. */
 const DEFAULT_HORIZON_DAYS = 14
 

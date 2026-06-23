@@ -5,7 +5,12 @@ import { afterAll, beforeAll, expect, it } from 'vitest'
 import { getAvailableDelivery } from '@/lib/delivery-slots-read'
 import { countActiveOrdersForOccurrence } from '@/lib/slot-capacity'
 import { reserveSlotAndCreateOrder } from '@/lib/slot-reservation'
-import { createDeliveryFixtures, type DeliveryFixtures } from '../setup/delivery-fixtures'
+import {
+  createDeliveryFixtures,
+  type DeliveryFixtures,
+  sampleOrderData,
+  teardownOrders,
+} from '../setup/delivery-fixtures'
 import { createFixtures, type TenantFixtures } from '../setup/fixtures'
 import { describeIntegration } from '../setup/integration'
 import { requireTestPayload } from '../setup/payload'
@@ -25,24 +30,7 @@ describeIntegration('delivery capacity: race-safe reservation + lifecycle', () =
   const createdOrderIds: number[] = []
   let occurrence: { date: string; id: number }
 
-  const orderDataFor = (customerId: number) => ({
-    amount: fx.productA.priceInPLN,
-    currency: 'PLN' as const,
-    customer: customerId,
-    customerEmail: 'cap@example.com',
-    items: [{ product: fx.productA.id, quantity: 1 }],
-    shippingAddress: {
-      addressLine1: 'ul. Testowa 1',
-      city: 'Kartuzy',
-      country: 'PL',
-      firstName: 'A',
-      lastName: 'B',
-      phone: '600100200',
-      postalCode: '83-300',
-    },
-    status: 'new' as const,
-    tenant: fx.tenantA.id,
-  })
+  const orderDataFor = (customerId: number) => sampleOrderData(fx, customerId, 'cap@example.com')
 
   const reserve = async (customerId: number) => {
     const res = await reserveSlotAndCreateOrder(payload, orderDataFor(customerId), occurrence)
@@ -63,15 +51,7 @@ describeIntegration('delivery capacity: race-safe reservation + lifecycle', () =
   })
 
   afterAll(async () => {
-    for (const id of [...createdOrderIds].reverse()) {
-      try {
-        await payload.delete({ collection: 'orders', id, overrideAccess: true })
-      } catch {
-        /* best-effort */
-      }
-    }
-    await df?.cleanup()
-    await fx?.cleanup()
+    await teardownOrders(payload, createdOrderIds, df, fx)
   })
 
   it('anti-overbooking: two concurrent reservations of the last seat → exactly one wins (AC#2)', async () => {
