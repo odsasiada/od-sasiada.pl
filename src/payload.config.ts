@@ -28,6 +28,7 @@ import { DeliverySlots } from '@/collections/DeliverySlots'
 import { Media } from '@/collections/Media'
 import { Tenants } from '@/collections/Tenants'
 import { Users } from '@/collections/Users'
+import { heroImageField, heroTenantMatch } from '@/ecommerce/hero-tenant-match'
 import { ordersOverride } from '@/ecommerce/orders'
 import { env } from '@/env'
 
@@ -157,9 +158,29 @@ export default buildConfig({
               name: 'description',
               type: 'textarea',
             },
+            // S3.2: optional hero image (D6), tenant-scoped picker + authoritative tenant-match (R-S3.4).
+            heroImageField('Zdjęcie główne'),
             ...defaultCollection.fields,
           ],
+          hooks: {
+            ...defaultCollection.hooks,
+            beforeValidate: [...(defaultCollection.hooks?.beforeValidate ?? []), heroTenantMatch],
+          },
         }),
+
+        // S3.2: variant-level hero image (D3) — mirrors the products override. `variants` is
+        // nested under `products` per the plugin's ProductsConfig type. Keep all default
+        // variant fields/admin; add the same tenant-match guard (R-S3.4).
+        variants: {
+          variantsCollectionOverride: ({ defaultCollection }) => ({
+            ...defaultCollection,
+            fields: [heroImageField('Zdjęcie wariantu'), ...defaultCollection.fields],
+            hooks: {
+              ...defaultCollection.hooks,
+              beforeValidate: [...(defaultCollection.hooks?.beforeValidate ?? []), heroTenantMatch],
+            },
+          }),
+        },
       },
     }),
 

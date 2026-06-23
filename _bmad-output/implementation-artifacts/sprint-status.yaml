@@ -69,13 +69,13 @@ development_status:
   S2.5: done
   S2.6: done
   S2.9: backlog  # PARK — plik historii istnieje, ale świadomie odłożone (sprint-2 „Poza sprintem")
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   # EPIC-3 — Media i kategorie (build order: SPIKE-S3 → S3.1 → S3.2 → S3.3 → S3.4 → S3.5 → S3.6)
   epic-3: in-progress
   SPIKE-S3: in-progress  # Media + multi-tenant + adapter Vercel Blob wpięte (warunkowo); 1 blokada: BLOB_READ_WRITE_TOKEN (realny blob/AC4)
   S3.1: in-progress  # baseline (Media + adapter) z SPIKE-S3; realny upload zablokowany na BLOB_READ_WRITE_TOKEN
-  S3.2: ready-for-dev
+  S3.2: review  # hero (produkt+wariant) + walidacja tenant-match (R-S3.4) — gotowe, do review
   S3.3: ready-for-dev
   S3.4: ready-for-dev
   S3.5: ready-for-dev

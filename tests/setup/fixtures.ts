@@ -1,6 +1,8 @@
 import type { Payload } from 'payload'
 import type { User } from '@/payload-types'
 
+import sharp from 'sharp'
+
 /**
  * Minimal, self-contained fixtures for integration tests — a tiny reconstruction of what
  * `seed.ts` + the old `second-tenant.ts` spike produced, but scoped to a unique run id so
@@ -16,6 +18,11 @@ import type { User } from '@/payload-types'
 export type TenantFixtures = {
   adminBUser: User
   cleanup: () => Promise<void>
+  /**
+   * Create a `media` upload (real 1200² PNG so sharp generates all configured variants) for the
+   * given tenant AND register it for cleanup. Shared by the media/hero isolation suites.
+   */
+  createMedia: (tenantId: number, alt: string) => Promise<{ id: number }>
   /** Create an order AND register it for cleanup (deleted before its tenant). */
   createOrder: (data: Record<string, unknown>) => Promise<{ id: number }>
   customerA1: { id: number }
@@ -173,6 +180,23 @@ export const createFixtures = async (payload: Payload): Promise<TenantFixtures> 
   const createOrder = async (data: Record<string, unknown>): Promise<{ id: number }> =>
     track('orders', await payload.create({ collection: 'orders', data: data as never, overrideAccess: true }))
 
+  // Upload collections require a binary on create; a real 1200² PNG lets sharp generate the
+  // configured variants. Tenant is stamped explicitly (server writes never trust client tenant).
+  const createMedia = async (tenantId: number, alt: string): Promise<{ id: number }> => {
+    const data = await sharp({ create: { background: { b: 0, g: 0, r: 0 }, channels: 3, height: 1200, width: 1200 } })
+      .png()
+      .toBuffer()
+    return track(
+      'media',
+      await payload.create({
+        collection: 'media',
+        data: { alt, tenant: tenantId },
+        file: { data, mimetype: 'image/png', name: `${alt}.png`, size: data.length },
+        overrideAccess: true,
+      }),
+    )
+  }
+
   const cleanup = async () => {
     // Delete in reverse creation order; ignore individual failures so cleanup is best-effort.
     for (const { collection, id } of [...created].reverse()) {
@@ -187,6 +211,7 @@ export const createFixtures = async (payload: Payload): Promise<TenantFixtures> 
   return {
     adminBUser,
     cleanup,
+    createMedia,
     createOrder,
     customerA1,
     customerA2,
