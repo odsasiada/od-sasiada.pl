@@ -11,5 +11,5 @@ import { getTestPayload } from './payload'
  */
 const dbReachable = (await getTestPayload()) !== null
 
-export const describeIntegration: typeof describe = dbReachable ? describe : describe.skip
+export const describeIntegration = dbReachable ? describe : describe.skip
 export const integrationAvailable = dbReachable

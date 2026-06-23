@@ -1,15 +1,17 @@
 import { fileURLToPath } from 'node:url'
 
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { defineConfig } from 'vitest/config'
 
 // Vitest config for unit + Payload-integration tests.
-// - tsconfigPaths resolves the `@/` alias from tsconfig.json.
+// - resolve.tsconfigPaths resolves the `@/` alias from tsconfig.json (Vite-native; replaces
+//   the vite-tsconfig-paths plugin).
 // - setup loads `.env.local` into process.env (Payload config reads env at import time).
 // - integration tests need a real Postgres + a single shared Payload instance, so they
 //   run single-threaded (no parallel pools) and with a generous timeout.
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     environment: 'node',
     // One Payload instance, one DB — never run integration suites in parallel

@@ -75,34 +75,36 @@ export type AvailableSlot = {
 const DEFAULT_HORIZON_DAYS = 14
 
 /** Intl formatter that yields the calendar fields of an instant in Europe/Warsaw. */
-const warsawParts = (instant: Date): { year: number; month: number; day: number; weekday: Weekday; minutes: number } => {
+const warsawParts = (
+  instant: Date,
+): { year: number; month: number; day: number; weekday: Weekday; minutes: number } => {
   const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: 'Europe/Warsaw',
-    year: 'numeric',
-    month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit',
     hourCycle: 'h23',
+    minute: '2-digit',
+    month: '2-digit',
+    timeZone: 'Europe/Warsaw',
     weekday: 'short',
+    year: 'numeric',
   })
   const parts = Object.fromEntries(fmt.formatToParts(instant).map((p) => [p.type, p.value]))
   const weekdayMap: Record<string, Weekday> = {
-    Sun: 0,
+    Fri: 5,
     Mon: 1,
+    Sat: 6,
+    Sun: 0,
+    Thu: 4,
     Tue: 2,
     Wed: 3,
-    Thu: 4,
-    Fri: 5,
-    Sat: 6,
   }
   const hour = Number(parts.hour)
   return {
-    year: Number(parts.year),
-    month: Number(parts.month),
     day: Number(parts.day),
-    weekday: weekdayMap[parts.weekday as string],
     minutes: hour * 60 + Number(parts.minute),
+    month: Number(parts.month),
+    weekday: weekdayMap[parts.weekday as string],
+    year: Number(parts.year),
   }
 }
 
@@ -127,11 +129,11 @@ const dayNumber = (year: number, month: number, day: number): number =>
 const fromDayNumber = (n: number): { year: number; month: number; day: number; weekday: Weekday } => {
   const d = new Date(n * 86_400_000)
   return {
-    year: d.getUTCFullYear(),
-    month: d.getUTCMonth() + 1,
     day: d.getUTCDate(),
+    month: d.getUTCMonth() + 1,
     // getUTCDay on a midnight-UTC instant gives the calendar weekday correctly.
     weekday: d.getUTCDay() as Weekday,
+    year: d.getUTCFullYear(),
   }
 }
 
@@ -203,19 +205,18 @@ export const computeAvailableSlots = (
       // Cutoff: the order must be placed by `cutoffTime` on the day `cutoffDaysBefore`
       // calendar days before the delivery day (Europe/Warsaw wall clock).
       const cutoffDayNum = dayNum - Math.max(0, Math.floor(slot.cutoffDaysBefore))
-      const cutoffPassed =
-        nowDayNum > cutoffDayNum || (nowDayNum === cutoffDayNum && nowMinutes >= cutoffMin)
+      const cutoffPassed = nowDayNum > cutoffDayNum || (nowDayNum === cutoffDayNum && nowMinutes >= cutoffMin)
       if (cutoffPassed) {
         continue
       }
 
       result.push({
-        id: slot.id,
         date: dateStr,
-        weekday: slot.weekday,
-        windowStart: slot.windowStart,
-        windowEnd: slot.windowEnd,
+        id: slot.id,
         remaining,
+        weekday: slot.weekday,
+        windowEnd: slot.windowEnd,
+        windowStart: slot.windowStart,
       })
     }
   }

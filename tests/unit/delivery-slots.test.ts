@@ -14,7 +14,6 @@ import { computeAvailableSlots, type DateException, type DeliverySlot, type Week
  */
 
 const MON: Weekday = 1
-const SAT: Weekday = 6
 const SUN: Weekday = 0
 
 // A roomy, well-formed Monday slot: deliver 08:00–12:00, cutoff 18:00 the day before.

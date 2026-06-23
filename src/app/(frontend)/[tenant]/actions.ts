@@ -5,12 +5,13 @@
 // an indirect next/headers import through a regular module breaks Turbopack's client action
 // proxy and the island silently fails to hydrate. See memory `use-server-turbopack-gotcha`.
 
+import type { Order } from '@/payload-types'
+
 import { headers as nextHeaders } from 'next/headers'
 import { getPayload } from 'payload'
 
 import { validateLineItem } from '@/lib/cart-validation'
 import { formatPLN } from '@/lib/money'
-import type { Order } from '@/payload-types'
 import config from '@/payload.config'
 
 export type Contact = {
@@ -85,7 +86,7 @@ export const placeOrder = async (tenantId: number, contact: Contact): Promise<Pl
   }
 
   const cart = await findCart(payload, customer.id, tenantId)
-  if (!cart || !cart.items || cart.items.length === 0) {
+  if (!cart?.items || cart.items.length === 0) {
     return { error: 'Koszyk jest pusty.', ok: false }
   }
 

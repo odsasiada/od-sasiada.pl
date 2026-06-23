@@ -14,7 +14,7 @@ import { sendOrderConfirmation, sendStatusChange } from '@/ecommerce/order-email
  */
 
 const stubPayload = () => {
-  const sendEmail = vi.fn(async () => undefined)
+  const sendEmail = vi.fn(async (_message: { html: string; subject: string; to: string }) => undefined)
   return { payload: { sendEmail } as unknown as BasePayload, sendEmail }
 }
 
@@ -43,7 +43,7 @@ describe('sendOrderConfirmation builder', () => {
     await sendOrderConfirmation(payload, baseOrder)
 
     expect(sendEmail).toHaveBeenCalledTimes(1)
-    const arg = sendEmail.mock.calls[0][0] as { html: string; subject: string; to: string }
+    const arg = sendEmail.mock.calls[0][0]
     expect(arg.to).toBe('klient@example.com')
     expect(arg.subject).toContain('ZAM-2026-00001')
     expect(arg.html).toContain('ZAM-2026-00001')
@@ -70,7 +70,7 @@ describe('sendStatusChange builder', () => {
     await sendStatusChange(payload, { ...baseOrder, status: 'confirmed' })
 
     expect(sendEmail).toHaveBeenCalledTimes(1)
-    const arg = sendEmail.mock.calls[0][0] as { html: string; subject: string; to: string }
+    const arg = sendEmail.mock.calls[0][0]
     expect(arg.to).toBe('klient@example.com')
     expect(arg.subject).toContain('Confirmed')
     expect(arg.html).toContain('Confirmed')

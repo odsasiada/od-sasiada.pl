@@ -23,6 +23,7 @@ import {
   publicAccess,
 } from '@/access'
 import { Customers } from '@/collections/Customers'
+import { DeliverySlots } from '@/collections/DeliverySlots'
 import { Media } from '@/collections/Media'
 import { Tenants } from '@/collections/Tenants'
 import { Users } from '@/collections/Users'
@@ -49,7 +50,7 @@ export default buildConfig({
     user: Users.slug,
   },
 
-  collections: [Users, Tenants, Customers, Media],
+  collections: [Users, Tenants, Customers, Media, DeliverySlots],
 
   db: postgresAdapter({
     pool: {
@@ -166,6 +167,8 @@ export default buildConfig({
         addresses: {},
         carts: {},
         customers: {},
+        // EPIC-2 (S2.1): per-tenant delivery windows — tenant stamp + panel isolation.
+        'delivery-slots': {},
         // EPIC-3 (SPIKE-S3): per-tenant media library — tenant stamp + panel isolation.
         media: {},
         orders: {},

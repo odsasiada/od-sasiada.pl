@@ -18,7 +18,7 @@ export const getCurrentCustomer = async (tenantId: number): Promise<CurrentCusto
   const payload = await getPayload({ config })
   const { user } = await payload.auth({ headers: await nextHeaders() })
 
-  if (!user || user.collection !== 'customers') {
+  if (user?.collection !== 'customers') {
     return null
   }
 

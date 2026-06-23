@@ -1,4 +1,5 @@
 import type { Payload } from 'payload'
+import type { User } from '@/payload-types'
 
 /**
  * Minimal, self-contained fixtures for integration tests — a tiny reconstruction of what
@@ -13,7 +14,7 @@ import type { Payload } from 'payload'
  */
 
 export type TenantFixtures = {
-  adminBUser: Record<string, unknown>
+  adminBUser: User
   cleanup: () => Promise<void>
   /** Create an order AND register it for cleanup (deleted before its tenant). */
   createOrder: (data: Record<string, unknown>) => Promise<{ id: number }>
@@ -184,7 +185,7 @@ export const createFixtures = async (payload: Payload): Promise<TenantFixtures> 
   }
 
   return {
-    adminBUser: adminBUser as Record<string, unknown>,
+    adminBUser,
     cleanup,
     createOrder,
     customerA1,

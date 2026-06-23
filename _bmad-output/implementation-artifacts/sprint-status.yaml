@@ -60,7 +60,7 @@ development_status:
   # EPIC-2 — Okna dostawy i powiadomienia o statusie (build order: SPIKE-S2 → S2.1 → S2.8 → S2.2 → S2.3 → S2.7 → S2.4 → S2.5 → S2.6; S2.9 PARK)
   epic-2: in-progress
   SPIKE-S2: done
-  S2.1: ready-for-dev
+  S2.1: review
   S2.8: ready-for-dev
   S2.2: ready-for-dev
   S2.3: ready-for-dev
