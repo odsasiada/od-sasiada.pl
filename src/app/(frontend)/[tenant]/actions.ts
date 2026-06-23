@@ -71,8 +71,17 @@ const findCart = async (payload: Awaited<ReturnType<typeof getPayload>>, custome
  * Składa zamówienie (gotówka przy dostawie) z pominięciem przepływu płatności pluginu.
  * Wymaga zalogowanego klienta (wymuszony login). Pozycje i ceny czytane SERWEROWO z `carts` —
  * ciało żądania klienta nie może wpłynąć na zawartość ani sumę zamówienia.
+ *
+ * `deliverySlot` (S2.2): wybór slotu jest tu tylko PRZYJMOWANY (carry-only), by S2.3/S2.4 miały
+ * na czym budować — NIE jest jeszcze walidowany (cutoff = S2.3, capacity = S2.7) ani zapisywany
+ * do zamówienia (relacja `deliverySlot` na `orders` = S2.4). Typ inline (gotcha hydratacji).
  */
-export const placeOrder = async (tenantId: number, contact: Contact): Promise<PlaceOrderResult> => {
+export const placeOrder = async (
+  tenantId: number,
+  contact: Contact,
+  deliverySlot?: { date: string; id: number },
+): Promise<PlaceOrderResult> => {
+  void deliverySlot // carry-only w S2.2 — walidacja/zapis w S2.3/S2.4
   const payload = await getPayload({ config })
 
   const customer = await resolveCustomer(payload, tenantId)

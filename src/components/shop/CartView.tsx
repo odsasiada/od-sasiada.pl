@@ -1,5 +1,7 @@
 'use client'
 
+import type { AvailableSlot } from '@/lib/delivery-slots'
+
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -17,19 +19,36 @@ const EMPTY_CONTACT: Contact = {
   postalCode: '',
 }
 
+// 0 = niedziela … 6 = sobota (zgodnie z AvailableSlot.weekday / JS getDay()).
+const WEEKDAY_PL = ['niedz.', 'pon.', 'wt.', 'śr.', 'czw.', 'pt.', 'sob.']
+
+/** "2026-06-23" → "23.06.2026"; etykieta slotu PL, np. "pon. 23.06.2026, 08:00–12:00". */
+const slotLabel = (slot: AvailableSlot): string => {
+  const [year, month, day] = slot.date.split('-')
+  return `${WEEKDAY_PL[slot.weekday]} ${day}.${month}.${year}, ${slot.windowStart}–${slot.windowEnd}`
+}
+
+/** Encodes a slot occurrence as "id__date" so the <select> value carries BOTH (S2.4 needs date). */
+const slotValue = (slot: AvailableSlot): string => `${slot.id}__${slot.date}`
+
 export const CartView = ({
   addresses = [],
+  availableSlots = [],
+  deliveryEnabled = false,
   minOrderValue,
   slug,
   tenantId,
 }: {
   addresses?: SavedAddress[]
+  availableSlots?: AvailableSlot[]
+  deliveryEnabled?: boolean
   minOrderValue: number
   slug: string
   tenantId: number
 }) => {
   const { clear, isLoggedIn, items, remove, requireLogin, setQuantity, total } = useCart()
   const [contact, setContact] = useState<Contact>(EMPTY_CONTACT)
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; id: AvailableSlot['id'] } | null>(null)
 
   const applyAddress = (id: string) => {
     const a = addresses.find((x) => String(x.id) === id)
@@ -60,7 +79,12 @@ export const CartView = ({
     setError(null)
     setSubmitting(true)
     // Items + total come from the SERVER cart (carts row), not from this request body.
-    const result = await placeOrder(tenantId, contact)
+    // selectedSlot is carried to placeOrder (S2.2); server-side cutoff/capacity validation is S2.3/S2.7.
+    const result = await placeOrder(
+      tenantId,
+      contact,
+      selectedSlot ? { date: selectedSlot.date, id: Number(selectedSlot.id) } : undefined,
+    )
     setSubmitting(false)
     if (result.ok) {
       setOrderNumber(result.orderNumber)
@@ -162,6 +186,30 @@ export const CartView = ({
                   </select>
                 </div>
               )}
+              {deliveryEnabled &&
+                (availableSlots.length === 0 ? (
+                  <div className='alert alert-error'>Brak dostępnych terminów dostawy — skontaktuj się z dostawcą.</div>
+                ) : (
+                  <div className='field'>
+                    <label htmlFor='delivery-slot'>Termin dostawy</label>
+                    <select
+                      className='variant-select'
+                      id='delivery-slot'
+                      onChange={(e) => {
+                        const picked = availableSlots.find((s) => slotValue(s) === e.target.value)
+                        setSelectedSlot(picked ? { date: picked.date, id: picked.id } : null)
+                      }}
+                      value={selectedSlot ? `${selectedSlot.id}__${selectedSlot.date}` : ''}
+                    >
+                      <option value=''>— wybierz termin —</option>
+                      {availableSlots.map((s) => (
+                        <option key={slotValue(s)} value={slotValue(s)}>
+                          {slotLabel(s)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
               {error && <div className='alert alert-error'>{error}</div>}
               <form onSubmit={onSubmit}>
                 <div className='field'>
@@ -227,7 +275,11 @@ export const CartView = ({
                     value={contact.email}
                   />
                 </div>
-                <button className='btn-primary' disabled={belowMin || submitting} type='submit'>
+                <button
+                  className='btn-primary'
+                  disabled={belowMin || submitting || (deliveryEnabled && !selectedSlot)}
+                  type='submit'
+                >
                   {submitting ? 'Placing order…' : 'Place order (cash on delivery)'}
                 </button>
               </form>
