@@ -25,7 +25,12 @@ export type DeliveryFixtures = {
   trackException: (id: number) => void
 }
 
-export const createDeliveryFixtures = async (payload: Payload, fx: TenantFixtures): Promise<DeliveryFixtures> => {
+export const createDeliveryFixtures = async (
+  payload: Payload,
+  fx: TenantFixtures,
+  opts: { capacity?: number } = {},
+): Promise<DeliveryFixtures> => {
+  const capacity = opts.capacity ?? 10
   const slotIds: number[] = []
   const exceptionIds: number[] = []
   const aSlotIds = new Set<number>()
@@ -34,7 +39,7 @@ export const createDeliveryFixtures = async (payload: Payload, fx: TenantFixture
     const slot = await payload.create({
       collection: 'delivery-slots',
       data: {
-        capacity: 10,
+        capacity,
         cutoffDaysBefore: 0,
         cutoffTime: '23:59',
         tenant: tenantId,

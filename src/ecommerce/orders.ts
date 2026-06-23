@@ -13,6 +13,7 @@ import {
   type OrderStatusValue,
   orderStatusField,
 } from '@/ecommerce/order-status'
+import { countActiveOrdersForOccurrence, occurrenceOf } from '@/lib/slot-capacity'
 
 /**
  * Orders collection override from the ecommerce plugin:
@@ -22,6 +23,34 @@ import {
  *  - overrides `status` field with delivery state machine + validates transitions,
  *  - afterChange: notification stub on status change (for future email/SMS).
  */
+
+/**
+ * EPIC-2 (S2.7): the chosen delivery occurrence persisted on the order. `slot` + `date` are the
+ * MINIMUM needed by the capacity recount (one source of truth = active orders, keyed per
+ * occurrence: slot + date). `date` is a queryable "YYYY-MM-DD" text so `payload.count` can filter
+ * `deliverySlot.date`. S2.4 will extend THIS SAME group with presentational snapshot fields
+ * (windowStart/windowEnd/label) — do not create a competing field.
+ */
+const DELIVERY_SLOT_FIELD: Field = {
+  admin: { readOnly: true },
+  fields: [
+    {
+      label: 'Slot dostawy',
+      name: 'slot',
+      relationTo: 'delivery-slots',
+      type: 'relationship',
+    },
+    {
+      admin: { description: 'Dzień wystąpienia (RRRR-MM-DD, Europe/Warsaw)' },
+      label: 'Data dostawy',
+      name: 'date',
+      type: 'text',
+    },
+  ],
+  label: 'Termin dostawy',
+  name: 'deliverySlot',
+  type: 'group',
+}
 
 const SNAPSHOT_FIELDS: Field[] = [
   {
@@ -101,6 +130,42 @@ const validateStatusTransition: CollectionBeforeChangeHook = ({ data, operation,
   return data
 }
 
+// S2.7: re-validate capacity when reactivating a cancelled order (`cancelled → new`). The seat
+// was freed while cancelled (recount excludes `cancelled`); reactivation must not overbook the
+// occurrence. The current order is still `cancelled` in the DB during beforeChange, so it does not
+// count itself. Runs in the update's `req` (transaction context); orders without a slot are skipped.
+const revalidateCapacityOnReactivation: CollectionBeforeChangeHook = async ({ data, operation, originalDoc, req }) => {
+  if (operation !== 'update' || data?.status !== 'new' || originalDoc?.status !== 'cancelled') {
+    return data
+  }
+  const occ = occurrenceOf(originalDoc)
+  if (!occ) {
+    return data // O8 / order without a slot — nothing to re-validate.
+  }
+
+  const slot = await req.payload.findByID({
+    collection: 'delivery-slots',
+    depth: 0,
+    disableErrors: true,
+    id: occ.slotId,
+    req,
+  })
+  const capacity = typeof slot?.capacity === 'number' ? slot.capacity : 0
+
+  // Current order is still `cancelled` in the DB here, so it doesn't count itself.
+  const active = await countActiveOrdersForOccurrence(
+    req.payload,
+    occ.slotId,
+    occ.date,
+    req as { transactionID: number | string },
+  )
+
+  if (active >= capacity) {
+    throw new Error('Nie można przywrócić zamówienia — wybrany termin jest pełny.')
+  }
+  return data
+}
+
 // S1.7: emails. Confirmation on create, notification on status change.
 // Sending doesn't block the operation — SMTP errors are only logged.
 const notifyOnOrderChange: CollectionAfterChangeHook = ({ doc, operation, previousDoc, req }) => {
@@ -154,12 +219,17 @@ export const ordersOverride = ({ defaultCollection }: { defaultCollection: Colle
         type: 'text',
         unique: true,
       },
+      DELIVERY_SLOT_FIELD,
       ...withOverrides(defaultCollection.fields),
     ],
     hooks: {
       ...defaultCollection.hooks,
       afterChange: [...(defaultCollection.hooks?.afterChange ?? []), notifyOnOrderChange],
-      beforeChange: [...(defaultCollection.hooks?.beforeChange ?? []), validateStatusTransition],
+      beforeChange: [
+        ...(defaultCollection.hooks?.beforeChange ?? []),
+        validateStatusTransition,
+        revalidateCapacityOnReactivation,
+      ],
       beforeValidate: [...(defaultCollection.hooks?.beforeValidate ?? []), populateSnapshotAndNumber],
     },
   }

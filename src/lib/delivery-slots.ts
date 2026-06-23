@@ -154,6 +154,13 @@ export const computeAvailableSlots = (
   exceptions: DateException[],
   now: Date,
   horizonDays: number = DEFAULT_HORIZON_DAYS,
+  /**
+   * Reserved-order count PER OCCURRENCE (slot + date), supplied by the caller from active orders
+   * (S2.7). When omitted, falls back to the slot-level `reservedCount` (backwards compatible with
+   * the S2.2 read path and the existing unit tests). Capacity (O4) is per occurrence, so two
+   * different dates of the same recurring slot each get their own seat budget.
+   */
+  reservedFor?: (slotId: DeliverySlot['id'], date: string) => number,
 ): AvailableSlot[] => {
   if (!slots.length) {
     return []
@@ -188,9 +195,10 @@ export const computeAvailableSlots = (
         continue // malformed/illogical slot — drop it (S2.1 validates these at write time)
       }
 
-      // Capacity (O4): full or non-positive capacity -> unavailable.
+      // Capacity (O4): full or non-positive capacity -> unavailable. Reserved count is per
+      // occurrence (slot + date) when the caller supplies `reservedFor`; else slot-level fallback.
       const capacity = Math.floor(slot.capacity)
-      const reserved = Math.floor(slot.reservedCount)
+      const reserved = Math.floor(reservedFor ? reservedFor(slot.id, dateStr) : slot.reservedCount)
       const remaining = capacity - reserved
       if (!Number.isFinite(remaining) || remaining <= 0) {
         continue

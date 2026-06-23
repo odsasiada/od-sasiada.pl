@@ -13,6 +13,7 @@ import { getPayload } from 'payload'
 import { validateLineItem } from '@/lib/cart-validation'
 import { validateChosenSlot } from '@/lib/delivery-slots-read'
 import { formatPLN } from '@/lib/money'
+import { reserveSlotAndCreateOrder } from '@/lib/slot-reservation'
 import config from '@/payload.config'
 
 export type Contact = {
@@ -142,32 +143,44 @@ export const placeOrder = async (
     return { error: slotCheck.error, ok: false }
   }
 
-  const order = await payload.create({
-    collection: 'orders',
-    data: {
-      amount,
-      currency: 'PLN',
-      customer: customer.id,
-      customerEmail: customer.email || contact.email || undefined,
-      items: orderItems,
-      shippingAddress: {
-        addressLine1: contact.addressLine1,
-        city: contact.city,
-        country: 'PL',
-        firstName: contact.firstName,
-        lastName: contact.lastName,
-        phone: contact.phone,
-        postalCode: contact.postalCode,
-      },
-      status: 'new',
-      tenant: tenantId,
+  const orderData = {
+    amount,
+    currency: 'PLN' as const,
+    customer: customer.id,
+    customerEmail: customer.email || contact.email || undefined,
+    items: orderItems,
+    shippingAddress: {
+      addressLine1: contact.addressLine1,
+      city: contact.city,
+      country: 'PL',
+      firstName: contact.firstName,
+      lastName: contact.lastName,
+      phone: contact.phone,
+      postalCode: contact.postalCode,
     },
-  })
+    status: 'new' as const,
+    tenant: tenantId,
+  }
+
+  let order: { id: number; orderNumber?: string }
+  if (deliverySlot) {
+    // S2.7: race-safe capacity reservation — recount + create in one transaction, serialized
+    // per occurrence by an advisory lock. If the occurrence filled up between the read-path
+    // check and now, the order is NOT created and the cart stays intact.
+    const reserved = await reserveSlotAndCreateOrder(payload, orderData, deliverySlot)
+    if (!reserved.ok) {
+      return { error: reserved.error, ok: false }
+    }
+    order = reserved.order
+  } else {
+    // O8 off — no delivery windows, no capacity logic (EPIC-1 behaviour).
+    order = (await payload.create({ collection: 'orders', data: orderData })) as { id: number; orderNumber?: string }
+  }
 
   // Clear the cart now that it's been turned into an order.
   await payload.update({ collection: 'carts', data: { items: [], subtotal: 0 }, id: cart.id, overrideAccess: true })
 
-  return { ok: true, orderNumber: (order as { orderNumber?: string }).orderNumber ?? `#${order.id}` }
+  return { ok: true, orderNumber: order.orderNumber ?? `#${order.id}` }
 }
 
 /**

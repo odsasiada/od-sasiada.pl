@@ -162,6 +162,28 @@ describe('computeAvailableSlots — capacity (O4)', () => {
   })
 })
 
+describe('computeAvailableSlots — per-occurrence reservedFor (S2.7)', () => {
+  // Monday 2026-06-15 08:00 Warsaw — today's window already started, so the next two Mondays
+  // (06-22, 06-29) are the candidate occurrences within the 14-day horizon.
+  const now = new Date('2026-06-15T06:00:00Z')
+
+  it('uses the per-occurrence count instead of the slot-level reservedCount', () => {
+    const slot = monSlot({ capacity: 5, reservedCount: 0 })
+    // Only the 2026-06-22 occurrence is full; the same recurring slot on 06-29 is still open.
+    const reservedFor = (_id: DeliverySlot['id'], date: string) => (date === '2026-06-22' ? 5 : 0)
+    const out = computeAvailableSlots([slot], NO_EXCEPTIONS, now, undefined, reservedFor)
+    expect(out.map((s) => s.date)).toEqual(['2026-06-29'])
+  })
+
+  it('reports remaining per occurrence from reservedFor', () => {
+    const slot = monSlot({ capacity: 5, reservedCount: 0 })
+    const reservedFor = (_id: DeliverySlot['id'], date: string) => (date === '2026-06-22' ? 3 : 1)
+    const out = computeAvailableSlots([slot], NO_EXCEPTIONS, now, undefined, reservedFor)
+    expect(out.find((s) => s.date === '2026-06-22')?.remaining).toBe(2)
+    expect(out.find((s) => s.date === '2026-06-29')?.remaining).toBe(4)
+  })
+})
+
 describe('computeAvailableSlots — malformed/illogical slots are dropped', () => {
   it('drops a slot whose window end is not after its start', () => {
     const now = new Date('2026-06-15T06:00:00Z')

@@ -55,7 +55,7 @@ export const getAvailableDelivery = async (
     cutoffDaysBefore: doc.cutoffDaysBefore,
     cutoffTime: doc.cutoffTime,
     id: doc.id,
-    // reservedCount is the caller's input — real recount from orders is S2.7.
+    // reservedCount is unused here — we pass a per-occurrence `reservedFor` lookup instead (S2.7).
     reservedCount: 0,
     weekday: doc.weekday as Weekday,
     windowEnd: doc.windowEnd,
@@ -64,7 +64,28 @@ export const getAvailableDelivery = async (
 
   const exceptions: DateException[] = exceptionsRes.docs.map((doc) => ({ date: doc.date }))
 
-  const slots = computeAvailableSlots(mapped, exceptions, new Date())
+  // S2.7: real reservedCount per occurrence (slot + date) from active orders — one source of
+  // truth, no incremental counter. Display path only (no transaction); placeOrder is authoritative.
+  const slotIds = slotsRes.docs.map((doc) => doc.id)
+  const ordersRes = await payload.find({
+    collection: 'orders',
+    depth: 0,
+    limit: 10_000,
+    overrideAccess: true,
+    where: { and: [{ 'deliverySlot.slot': { in: slotIds } }, { status: { not_in: ['cancelled'] } }] },
+  })
+  const reservedByOccurrence = new Map<string, number>()
+  for (const order of ordersRes.docs) {
+    const ds = order.deliverySlot
+    const slotId = ds && (typeof ds.slot === 'object' ? ds.slot?.id : ds.slot)
+    if (slotId && ds?.date) {
+      const key = `${slotId}|${ds.date}`
+      reservedByOccurrence.set(key, (reservedByOccurrence.get(key) ?? 0) + 1)
+    }
+  }
+  const reservedFor = (slotId: DeliverySlot['id'], date: string) => reservedByOccurrence.get(`${slotId}|${date}`) ?? 0
+
+  const slots = computeAvailableSlots(mapped, exceptions, new Date(), undefined, reservedFor)
   return { deliveryEnabled, slots }
 }
 
