@@ -1,5 +1,5 @@
 # generated: 2026-06-20
-# last_updated: 2026-06-22
+# last_updated: 2026-06-23
 # project: od-sasiada.pl
 # project_key: NOKEY
 # tracking_system: file-system
@@ -37,7 +37,7 @@
 # - Stories are ordered by build order from epics.md
 
 generated: 2026-06-20
-last_updated: 2026-06-22
+last_updated: 2026-06-23
 project: od-sasiada.pl
 project_key: NOKEY
 tracking_system: file-system
@@ -58,16 +58,16 @@ development_status:
   epic-1-retrospective: done
 
   # EPIC-2 — Okna dostawy i powiadomienia o statusie (build order: SPIKE-S2 → S2.1 → S2.8 → S2.2 → S2.3 → S2.7 → S2.4 → S2.5 → S2.6; S2.9 PARK)
-  epic-2: in-progress
+  epic-2: done
   SPIKE-S2: done
-  S2.1: review
-  S2.8: review
-  S2.2: review
-  S2.3: review
-  S2.7: review
-  S2.4: review
-  S2.5: review
-  S2.6: review
+  S2.1: done
+  S2.8: done
+  S2.2: done
+  S2.3: done
+  S2.7: done
+  S2.4: done
+  S2.5: done
+  S2.6: done
   S2.9: backlog  # PARK — plik historii istnieje, ale świadomie odłożone (sprint-2 „Poza sprintem")
   epic-2-retrospective: optional
 
