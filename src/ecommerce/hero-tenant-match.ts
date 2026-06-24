@@ -1,4 +1,4 @@
-import type { CollectionBeforeValidateHook, Field } from 'payload'
+import { APIError, type CollectionBeforeValidateHook, type Field } from 'payload'
 
 /**
  * S3.2 — single optional hero image (D2/D3/D6) on products AND variants, with authoritative
@@ -65,8 +65,14 @@ export const heroTenantMatch: CollectionBeforeValidateHook = async ({ data, orig
   })
 
   // Reject a missing media or one belonging to a different tenant (R-S3.4).
-  if (!media || tenantOf(media) !== docTenant) {
-    throw new Error('Zdjęcie musi należeć do tego samego dostawcy.')
+  if (!media) {
+    throw new APIError('Nie znaleziono zdjęcia.', 404, undefined)
+  }
+  if (tenantOf(media) === null) {
+    throw new APIError('Zdjęcie nie ma przypisanego dostawcy — skontaktuj się z administratorem.', 400, undefined)
+  }
+  if (tenantOf(media) !== docTenant) {
+    throw new APIError('Zdjęcie musi należeć do tego samego dostawcy.', 400, undefined)
   }
 
   return data

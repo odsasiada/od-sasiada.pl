@@ -1,7 +1,19 @@
 // Pure types + formatting — no server-only imports (client-safe).
 
+/**
+ * Resolved storefront image (S3.3). Built server-side from a `media` doc (preferred `card`
+ * sharp variant); rendered client-side via next/image. Pure data — safe in client islands.
+ */
+export type ProductImage = {
+  alt: string
+  height?: number
+  url: string
+  width?: number
+}
+
 export type CatalogVariant = {
   id: number
+  image: ProductImage | null
   label: string
   priceInPLN: number
 }
@@ -9,6 +21,7 @@ export type CatalogVariant = {
 export type CatalogProduct = {
   description: null | string
   id: number
+  image: ProductImage | null
   priceInPLN: null | number
   title: string
   variants: CatalogVariant[]

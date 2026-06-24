@@ -104,6 +104,26 @@ a {
   border-radius: 12px;
 }
 
+.product-image,
+.product-image-placeholder {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Q4: CSS-only placeholder (no asset in public/). Subtle diagonal hatch on muted bg. */
+.product-image-placeholder {
+  background-color: var(--border);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 8px,
+    rgba(0, 0, 0, 0.04) 8px,
+    rgba(0, 0, 0, 0.04) 16px
+  );
+}
+
 .product-title {
   margin: 0;
   font-size: 16px;
@@ -317,9 +337,25 @@ a {
 }
 
 .order-items {
-  padding-left: 18px;
+  padding-left: 0;
   margin: 12px 0;
   color: var(--text);
+  list-style: none;
+}
+
+.order-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.order-item-thumb {
+  flex-shrink: 0;
+  width: 56px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .order-total {

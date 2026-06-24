@@ -1,5 +1,5 @@
 # generated: 2026-06-20
-# last_updated: 2026-06-23
+# last_updated: 2026-06-24
 # project: od-sasiada.pl
 # project_key: NOKEY
 # tracking_system: file-system
@@ -76,7 +76,7 @@ development_status:
   SPIKE-S3: in-progress  # Media + multi-tenant + adapter Vercel Blob wpięte (warunkowo); 1 blokada: BLOB_READ_WRITE_TOKEN (realny blob/AC4)
   S3.1: in-progress  # baseline (Media + adapter) z SPIKE-S3; realny upload zablokowany na BLOB_READ_WRITE_TOKEN
   S3.2: review  # hero (produkt+wariant) + walidacja tenant-match (R-S3.4) — gotowe, do review
-  S3.3: ready-for-dev
+  S3.3: review
   S3.4: ready-for-dev
   S3.5: ready-for-dev
   S3.6: ready-for-dev

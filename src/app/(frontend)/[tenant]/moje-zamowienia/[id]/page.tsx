@@ -1,19 +1,24 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import { ORDER_STATUS_LABELS } from '@/ecommerce/order-status'
 import { getCurrentCustomer } from '@/lib/auth'
-import { formatPLN, getTenantBySlug } from '@/lib/shop'
+import { formatPLN, getTenantBySlug, resolveOrderItemImages } from '@/lib/shop'
 import config from '@/payload.config'
+
+const THUMB_SIZE = 56
 
 const formatDate = (iso: string) =>
   new Intl.DateTimeFormat('pl-PL', { dateStyle: 'long', timeStyle: 'short' }).format(new Date(iso))
 
 type OrderItem = {
+  product?: null | number
   productNameSnapshot?: null | string
   quantity: number
   unitPriceSnapshot?: null | number
+  variant?: null | number
   variantLabelSnapshot?: null | string
 }
 
@@ -90,6 +95,10 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
   }
   const address = o.shippingAddress
   const slot = o.deliverySlot
+  const items = o.items ?? []
+  // Live thumbnails (variant → product → placeholder), tenant-scoped (R-S3.2). Image is NOT
+  // snapshotted (Q2) — it reflects the product's current heroImage, unlike price/name.
+  const itemImages = await resolveOrderItemImages(tenant.id, items)
 
   return (
     <main className='container'>
@@ -108,15 +117,32 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
         <div className='tenant-meta'>{formatDate(order.createdAt)}</div>
 
         <ul className='order-items'>
-          {(o.items ?? []).map((it, idx) => (
-            <li key={idx}>
-              {it.quantity} × {it.productNameSnapshot}
-              {it.variantLabelSnapshot
-                ? ` (${it.variantLabelSnapshot.replace(`${it.productNameSnapshot} — `, '')})`
-                : ''}{' '}
-              — {formatPLN((it.unitPriceSnapshot ?? 0) * it.quantity)}
-            </li>
-          ))}
+          {items.map((it, idx) => {
+            const image = itemImages.get(idx) ?? null
+            return (
+              <li className='order-item' key={idx}>
+                {image ? (
+                  <Image
+                    alt={image.alt}
+                    className='order-item-thumb'
+                    height={THUMB_SIZE}
+                    sizes={`${THUMB_SIZE}px`}
+                    src={image.url}
+                    width={THUMB_SIZE}
+                  />
+                ) : (
+                  <div aria-hidden='true' className='order-item-thumb product-image-placeholder' />
+                )}
+                <span>
+                  {it.quantity} × {it.productNameSnapshot}
+                  {it.variantLabelSnapshot
+                    ? ` (${it.variantLabelSnapshot.replace(`${it.productNameSnapshot} — `, '')})`
+                    : ''}{' '}
+                  — {formatPLN((it.unitPriceSnapshot ?? 0) * it.quantity)}
+                </span>
+              </li>
+            )
+          })}
         </ul>
 
         {slot?.date ? (

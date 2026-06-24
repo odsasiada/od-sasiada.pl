@@ -1,11 +1,16 @@
 'use client'
 
+import Image from 'next/image'
 import { useState } from 'react'
 
 import { useCart } from '@/components/shop/cart-store'
 import { type CatalogProduct, formatPLN } from '@/lib/money'
+import { resolveProductImage } from '@/lib/product-image'
 
-const ProductCard = ({ product }: { product: CatalogProduct }) => {
+// Grid is 50vw on mobile, 25vw on desktop — let next/image pick the right sharp variant (NFR8).
+const CARD_SIZES = '(max-width: 768px) 50vw, 25vw'
+
+const ProductCard = ({ priority, product }: { priority?: boolean; product: CatalogProduct }) => {
   const { add } = useCart()
   const hasVariants = product.variants.length > 0
   const [variantId, setVariantId] = useState<number>(hasVariants ? product.variants[0].id : 0)
@@ -13,6 +18,8 @@ const ProductCard = ({ product }: { product: CatalogProduct }) => {
 
   const selectedVariant = product.variants.find((v) => v.id === variantId) ?? null
   const price = hasVariants ? (selectedVariant?.priceInPLN ?? null) : product.priceInPLN
+  // D3 fallback (variant → product → placeholder) via the shared pure helper (R-S3.6).
+  const image = resolveProductImage(selectedVariant?.image ?? null, product.image)
 
   const onAdd = () => {
     if (price === null) {
@@ -31,6 +38,19 @@ const ProductCard = ({ product }: { product: CatalogProduct }) => {
 
   return (
     <div className='product-card'>
+      {image ? (
+        <Image
+          alt={image.alt}
+          className='product-image'
+          height={image.height ?? 768}
+          priority={priority}
+          sizes={CARD_SIZES}
+          src={image.url}
+          width={image.width ?? 768}
+        />
+      ) : (
+        <div aria-hidden='true' className='product-image-placeholder' />
+      )}
       <h3 className='product-title'>{product.title}</h3>
       {product.description && <p className='product-desc'>{product.description}</p>}
 
@@ -60,8 +80,8 @@ export const Catalog = ({ products }: { products: CatalogProduct[] }) => {
 
   return (
     <div className='product-grid'>
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
+      {products.map((p, idx) => (
+        <ProductCard key={p.id} priority={idx < 4} product={p} />
       ))}
     </div>
   )
