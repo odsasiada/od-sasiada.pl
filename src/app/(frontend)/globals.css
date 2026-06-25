@@ -88,6 +88,28 @@ a {
   color: var(--muted);
 }
 
+.category-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.category-filter a {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: var(--text);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.category-filter a.is-active {
+  color: var(--card);
+  background: var(--green);
+  border-color: var(--green);
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));

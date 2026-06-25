@@ -25,7 +25,9 @@ const fillSlugFromName: CollectionBeforeValidateHook = async ({ data }) => {
   if (!slug && name) {
     const slugified = slugify(name)
     if (!slugified) {
-      throw new Error('Nazwa musi zawierać przynajmniej jeden znak, który może być użyty w identyfikatorze URL (literę lub cyfrę).')
+      throw new Error(
+        'Nazwa musi zawierać przynajmniej jeden znak, który może być użyty w identyfikatorze URL (literę lub cyfrę).',
+      )
     }
     typedData.slug = slugified
   }

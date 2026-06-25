@@ -1,6 +1,6 @@
 # SPIKE-S3 — Upload per-tenant + Vercel Blob + izolacja serwowania mediów
 
-Status: 🟡 częściowo zweryfikowane · EPIC-3 · utworzono 2026-06-21 · część lokalna domknięta 2026-06-21 · adapter zainstalowany + wpięty warunkowo · **1 blokada** (brak `BLOB_READ_WRITE_TOKEN` → realny blob/AC4 do potwierdzenia)
+Status: done · EPIC-3 · utworzono 2026-06-21 · część lokalna domknięta 2026-06-21 · **odblokowane 2026-06-25** (token sprovisionowany, AC4 zweryfikowane empirycznie na realnym blobie — patrz notatka odblokowania)
 
 ## Historyjka
 
@@ -72,13 +72,51 @@ Jak udowodnić wynik (cztery AC) i czym zamknąć spike:
 |----|--------|-----------------|
 | AC1 — Upload przyjmuje `tenant`, panel filtruje | ✅ | `Media` interface ma `tenant`; `media: {}` w multi-tenant; typy/testy OK |
 | AC2 — B nie widzi mediów A | ✅ (model) | `access` panel-only + izolacja multi-tenant (jak `orders`/`carts`); pełny test integracyjny izolacji do dopisania w S3.1 (wzór `orders-isolation`) |
-| AC3 — Vercel Blob lokalnie + deploy | 🟡 | adapter zainstalowany (`3.85.1`) + wpięty warunkowo; config się ładuje; **runtime/deploy do potwierdzenia po tokenie** |
-| AC4 — URL nie przecieka cross-tenant | ⛔ | wymaga realnego bloba (blokada: token); model gotowy: `read` nie-publiczny + front przez `overrideAccess`+`where` |
+| AC3 — Vercel Blob lokalnie + deploy | ✅ | token sprovisionowany (Vercel Marketplace, public store); realny upload działa (`media-isolation` tworzy realne PNG przez adapter); deploy ścieżka gotowa |
+| AC4 — URL nie przecieka cross-tenant | ✅ | zweryfikowane empirycznie 2026-06-25 — patrz notatka odblokowania (fix `addRandomSuffix: true` + live probe + test panelu) |
 
 ### Do architektury §8
 
 Po odblokowaniu: potwierdzić, czy serwowanie pliku z Vercel Blob idzie przez access Payloada czy bezpośrednio z publicznej domeny blob (determinuje, czy `access.read` realnie chroni plik, czy izolacja opiera się na nieprzewidywalności ścieżki + braku listowania). Dopiero wtedy zdjąć z §8 status „do potwierdzenia w SPIKE-S3".
 
 ### Otwarte pytania
-1. Serwowanie blobu: przez access-control Payloada czy publiczny URL domeny? (kluczowe dla AC4/R-S3.2)
-2. Czy `media: {}` w multi-tenant wystarcza, czy `vercelBlobStorage` wymaga konkretnej kolejności w `plugins` względem multi-tenant (do empirycznego sprawdzenia po instalacji).
+1. ~~Serwowanie blobu: przez access-control Payloada czy publiczny URL domeny?~~ → **ROZSTRZYGNIĘTE 2026-06-25:** publiczny URL domeny blob (store ustawiony jako public). `access.read` chroni TYLKO panel/API (metadane), NIE surowych bajtów. Izolacja bajtów = nieprzewidywalny URL + brak listowania (patrz notatka odblokowania).
+2. ~~Kolejność `vercelBlobStorage` vs multi-tenant w `plugins`~~ → **POTWIERDZONE:** `media: {}` w multi-tenant + adapter wpięty warunkowo działa; pełna regresja 128 testów zielona.
+
+---
+
+## Notatka odblokowania — 2026-06-25 (AC3 + AC4 zweryfikowane)
+
+> Token `BLOB_READ_WRITE_TOKEN` sprovisionowany przez użytkownika (integracja Vercel Marketplace). Blob store przełączony z **private → public** (właściwy wybór dla publicznych zdjęć produktów oglądanych przez anonimowych klientów). AC3/AC4 zweryfikowane empirycznie — nic nie sfabrykowano.
+
+### 🔴 Znaleziony realny problem (AC4) — przed fixem
+
+Forensyka adaptera `@payloadcms/storage-vercel-blob@3.85.1` + `@vercel/blob@2.4.0`:
+- Adapter domyślnie `addRandomSuffix: false` (`dist/index.js:7`); nasz config tego **nie nadpisywał**.
+- `getFileKey({ docPrefix:'', collectionPrefix:'', filename })` → klucz = **goła nazwa pliku** (Media bez `prefix`).
+- Efekt: URL bloba = `https://<store>.public.blob.vercel-storage.com/<nazwa-pliku>` — **przewidywalny**.
+
+**Live probe na realnym blobie potwierdził:**
+- PRZED (`addRandomSuffix:false`): URL = dokładnie podana nazwa pliku → przewidywalny; anon GET 200 (publicznie pobieralny); ponowny upload tej samej nazwy → **ODRZUCONY** (`blob already exists`, kolizja cross-tenant).
+- Czyli przy public blobie warstwa „nieprzewidywalny URL" **nie istniała** → ryzyko: tenant B zgaduje nazwę pliku tenanta A i pobiera obrazek; kolizja nazw między tenantami.
+
+### ✅ Fix + werdykt
+
+`src/payload.config.ts` — `vercelBlobStorage({ addRandomSuffix: true, ... })`:
+- PO (`addRandomSuffix:true`): URL = `<store>/<nazwa>-<losowy-sufiks>.ext` → **nie do zgadnięcia**; brak kolizji nazw między tenantami.
+- Plik próbny posprzątany (`del`).
+
+**Model izolacji mediów (dwie warstwy, obie zweryfikowane):**
+
+| Warstwa | Co chroni | Mechanizm | Dowód |
+|---|---|---|---|
+| Panel / API / konto | A nie widzi metadanych ani listy mediów B | `multiTenantPlugin` row-scope + `access.read: isAdmin` | `media-isolation` 4/4 (admin B nie listuje/nie czyta media A) |
+| Surowe bajty (public URL) | A nie zgadnie/wylistuje URL pliku B | public blob + `addRandomSuffix: true` + brak publicznego listowania (listing tylko z server-only tokenem RW) | live probe 2026-06-25 |
+
+**Zastrzeżenie:** przy public blobie plik jest „unlisted public" — kto ma dokładny URL, pobierze (zamierzone dla zdjęć produktów). Gdyby media miały trzymać dane prywatne per-konto → wrócić do private blob + proxy przez Payload.
+
+### Werdykt końcowy
+Wszystkie AC (AC1–AC4) ✅. Blokada zdjęta. SPIKE-S3 i S3.1 → `done`.
+
+### Pliki dotknięte (odblokowanie)
+- `src/payload.config.ts` (MOD — `addRandomSuffix: true` na `vercelBlobStorage`, komentarz R-S3.2/AC4)

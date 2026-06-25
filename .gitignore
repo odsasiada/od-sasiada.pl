@@ -3,6 +3,10 @@
 .claude/
 .agents/
 
+# Local-disk media uploads (dev + tests without BLOB_READ_WRITE_TOKEN) — never commit
+/media/
+test-upload.png
+
 # BMad — ignore installer-managed and personal files
 _bmad/config.toml
 _bmad/config.user.toml

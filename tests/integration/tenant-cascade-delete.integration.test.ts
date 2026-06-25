@@ -146,9 +146,7 @@ describeIntegration('tenant-cascade-delete', () => {
       // After fix: this catch should not be reached
       const errorMessage = error instanceof Error ? error.message : String(error)
       // Re-throw with context - this should FAIL before fix
-      throw new Error(
-        `Tenant delete failed (likely FK constraint): ${errorMessage}`,
-      )
+      throw new Error(`Tenant delete failed (likely FK constraint): ${errorMessage}`)
     }
   })
 

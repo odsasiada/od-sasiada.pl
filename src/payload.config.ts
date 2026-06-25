@@ -218,6 +218,11 @@ export default buildConfig({
     ...(env.BLOB_READ_WRITE_TOKEN
       ? [
           vercelBlobStorage({
+            // R-S3.2 (AC4): public blob → isolation rests on UNGUESSABLE urls + no listing.
+            // The adapter defaults this to false, which yields predictable `<store>/<filename>`
+            // urls (cross-tenant guess + filename collisions). True appends a random suffix so a
+            // tenant cannot guess another tenant's image url, and same-named files never collide.
+            addRandomSuffix: true,
             collections: { media: true },
             token: env.BLOB_READ_WRITE_TOKEN,
           }),

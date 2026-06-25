@@ -1,9 +1,16 @@
 import { notFound } from 'next/navigation'
 
 import { Catalog } from '@/components/shop/Catalog'
-import { formatPLN, getCatalog, getTenantBySlug } from '@/lib/shop'
+import { CategoryFilter } from '@/components/shop/CategoryFilter'
+import { formatPLN, getCatalog, getCategories, getTenantBySlug } from '@/lib/shop'
 
-export default async function CatalogPage({ params }: { params: Promise<{ tenant: string }> }) {
+export default async function CatalogPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ tenant: string }>
+  searchParams: Promise<{ kategoria?: string | string[] }>
+}) {
   const { tenant: slug } = await params
   const tenant = await getTenantBySlug(slug)
 
@@ -11,7 +18,10 @@ export default async function CatalogPage({ params }: { params: Promise<{ tenant
     notFound()
   }
 
-  const products = await getCatalog(tenant.id)
+  const { kategoria: kategoriaParam } = await searchParams
+  // Next delivers `string[]` for a repeated query key (`?kategoria=a&kategoria=b`) — take the first.
+  const kategoria = Array.isArray(kategoriaParam) ? kategoriaParam[0] : kategoriaParam
+  const [categories, products] = await Promise.all([getCategories(tenant.id), getCatalog(tenant.id, kategoria)])
 
   return (
     <main className='container'>
@@ -23,6 +33,8 @@ export default async function CatalogPage({ params }: { params: Promise<{ tenant
         </p>
         {tenant.priceNotice && <p className='price-notice'>{tenant.priceNotice}</p>}
       </section>
+
+      <CategoryFilter activeSlug={kategoria} categories={categories} tenantSlug={slug} />
 
       <Catalog products={products} />
     </main>

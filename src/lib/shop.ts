@@ -182,12 +182,55 @@ export const resolveOrderItemImages = async (
   return result
 }
 
+/** Minimal category shape for the storefront filter (name + slug). */
+export type ShopCategory = { id: number; name: string; slug: string }
+
+/**
+ * Categories of THIS tenant, for the storefront filter UI (S3.6).
+ * Public read → isolation is MANUAL: `where { tenant }` is mandatory (R-S3.5).
+ */
+export const getCategories = async (tenantId: number): Promise<ShopCategory[]> => {
+  const payload = await getPayload({ config })
+  const res = await payload.find({
+    collection: 'categories',
+    depth: 0,
+    limit: 200,
+    overrideAccess: true,
+    sort: 'name',
+    where: { tenant: { equals: tenantId } },
+  })
+  return res.docs.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))
+}
+
 /**
  * Supplier catalog — ONLY published products for THIS tenant.
  * Isolation is MANUAL here (tenant filter) — the plugin doesn't guard public queries.
+ *
+ * S3.6 — optional `categorySlug` narrows the list to products in that category. The slug is
+ * resolved to a category id TENANT-SCOPED (`where { slug, tenant }`); an unknown/foreign slug
+ * resolves to nothing → returns `[]` (never cross-tenant, R-S3.5). A multi-category product
+ * matches each of its categories (D4) via the hasMany relation `in` operator.
  */
-export const getCatalog = async (tenantId: number): Promise<CatalogProduct[]> => {
+export const getCatalog = async (tenantId: number, categorySlug?: string): Promise<CatalogProduct[]> => {
   const payload = await getPayload({ config })
+
+  // R-S3.5: resolve slug → category id within THIS tenant. Foreign/unknown slug → empty catalog.
+  let categoryId: null | number = null
+  if (categorySlug) {
+    const cat = await payload.find({
+      collection: 'categories',
+      depth: 0,
+      limit: 1,
+      overrideAccess: true,
+      where: {
+        and: [{ slug: { equals: categorySlug } }, { tenant: { equals: tenantId } }],
+      },
+    })
+    categoryId = cat.docs[0]?.id ?? null
+    if (categoryId === null) {
+      return []
+    }
+  }
 
   const products = await payload.find({
     collection: 'products',
@@ -196,6 +239,8 @@ export const getCatalog = async (tenantId: number): Promise<CatalogProduct[]> =>
     where: {
       _status: { equals: 'published' },
       tenant: { equals: tenantId },
+      // S3.6: only when filtering — hasMany relation match (D4: each category of the product matches).
+      ...(categoryId !== null ? { categories: { in: [categoryId] } } : {}),
     },
   })
 

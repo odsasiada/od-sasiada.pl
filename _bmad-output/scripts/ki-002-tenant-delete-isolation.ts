@@ -58,7 +58,9 @@ const run = async () => {
   }
 
   const watchdog = setTimeout(() => {
-    log('⛔ HANG DETECTED — a deleteByID did not return within 60s → bug IS in Payload/Postgres layer (lock/idle-in-tx), not just the Next dev server.')
+    log(
+      '⛔ HANG DETECTED — a deleteByID did not return within 60s → bug IS in Payload/Postgres layer (lock/idle-in-tx), not just the Next dev server.',
+    )
     process.exit(2)
   }, 60_000)
   watchdog.unref?.()
@@ -85,8 +87,13 @@ const run = async () => {
   }
 
   clearTimeout(watchdog)
-  const remaining = await payload.find({ collection: 'tenants', limit: 200, depth: 0 })
-  log(`[done] remaining tenants: ${remaining.docs.map((d) => d.id).sort((a, b) => Number(a) - Number(b)).join(', ')}`)
+  const remaining = await payload.find({ collection: 'tenants', depth: 0, limit: 200 })
+  log(
+    `[done] remaining tenants: ${remaining.docs
+      .map((d) => d.id)
+      .sort((a, b) => Number(a) - Number(b))
+      .join(', ')}`,
+  )
 
   await payload.db.destroy?.()
 }

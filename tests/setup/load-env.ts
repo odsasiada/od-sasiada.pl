@@ -15,3 +15,8 @@ if (existsSync(envLocal)) {
 if (existsSync(envDefault)) {
   loadDotenv({ path: envDefault })
 }
+
+// Integration tests must NEVER touch the production Vercel Blob store. Dropping the token here
+// (before payload.config / @/env are imported) makes the storage adapter fall back to local-disk
+// (payload.config.ts), so test uploads stay local and the real blob store stays clean.
+delete process.env.BLOB_READ_WRITE_TOKEN

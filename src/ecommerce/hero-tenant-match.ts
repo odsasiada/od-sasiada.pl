@@ -27,12 +27,15 @@ const tenantOf = (doc: TenantHolder): null | number => {
 
 /** Resolve the referenced media id whether the upload value is an id, a populated object, or absent. */
 const idOf = (value: unknown): null | number => {
-  if (typeof value === 'number' && !Number.isNaN(value)) {
-    return value
+  // DB ids are positive integers — reject NaN/Infinity/fractional and any non-integer string
+  // (incl. '' which `Number('')` would coerce to 0, turning a cleared optional field into a
+  // phantom id-0 lookup → spurious 404). Only `^\d+$` strings and integer numbers are real ids.
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? value : null
   }
   if (typeof value === 'string') {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : null
+    const trimmed = value.trim()
+    return /^\d+$/.test(trimmed) ? Number(trimmed) : null
   }
   if (value && typeof value === 'object' && 'id' in value && typeof (value as { id: unknown }).id === 'number') {
     return (value as { id: number }).id
@@ -75,11 +78,7 @@ const validateTenantRelation = async ({
   if (ids.length === 0) return
 
   if (docTenant === null) {
-    throw new APIError(
-      'Zapisany dokument nie ma przypisanego dostawcy — najpierw wybierz dostawcę.',
-      400,
-      undefined,
-    )
+    throw new APIError('Zapisany dokument nie ma przypisanego dostawcy — najpierw wybierz dostawcę.', 400, undefined)
   }
 
   const relations = await req.payload.find({
