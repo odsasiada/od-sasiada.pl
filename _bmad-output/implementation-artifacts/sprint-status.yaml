@@ -37,7 +37,7 @@
 # - Stories are ordered by build order from epics.md
 
 generated: 2026-06-20
-last_updated: 2026-06-23
+last_updated: 2026-06-25
 project: od-sasiada.pl
 project_key: NOKEY
 tracking_system: file-system
@@ -77,7 +77,7 @@ development_status:
   S3.1: in-progress  # baseline (Media + adapter) z SPIKE-S3; realny upload zablokowany na BLOB_READ_WRITE_TOKEN
   S3.2: review  # hero (produkt+wariant) + walidacja tenant-match (R-S3.4) — gotowe, do review
   S3.3: review
-  S3.4: ready-for-dev
-  S3.5: ready-for-dev
+  S3.4: review
+  S3.5: done
   S3.6: ready-for-dev
   epic-3-retrospective: optional

@@ -47,6 +47,8 @@ export const Media: CollectionConfig = {
       { name: 'card', width: 768 },
       { name: 'hero', width: 1200 },
     ],
-    mimeTypes: ['image/*'],
+    // image/svg+xml excluded deliberately — SVG can carry script content (XSS vector).
+    // Only raster-safe types allowed.
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
   },
 }

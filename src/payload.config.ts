@@ -22,13 +22,14 @@ import {
   isDocumentOwner,
   publicAccess,
 } from '@/access'
+import { Categories } from '@/collections/Categories'
 import { Customers } from '@/collections/Customers'
 import { DeliveryDateExceptions } from '@/collections/DeliveryDateExceptions'
 import { DeliverySlots } from '@/collections/DeliverySlots'
 import { Media } from '@/collections/Media'
 import { Tenants } from '@/collections/Tenants'
 import { Users } from '@/collections/Users'
-import { heroImageField, heroTenantMatch } from '@/ecommerce/hero-tenant-match'
+import { categoriesField, heroImageField, heroTenantMatch } from '@/ecommerce/hero-tenant-match'
 import { ordersOverride } from '@/ecommerce/orders'
 import { env } from '@/env'
 
@@ -52,7 +53,7 @@ export default buildConfig({
     user: Users.slug,
   },
 
-  collections: [Users, Tenants, Customers, Media, DeliverySlots, DeliveryDateExceptions],
+  collections: [Users, Tenants, Customers, Media, DeliverySlots, DeliveryDateExceptions, Categories],
 
   db: postgresAdapter({
     pool: {
@@ -158,6 +159,7 @@ export default buildConfig({
               name: 'description',
               type: 'textarea',
             },
+            categoriesField('Kategorie'),
             // S3.2: optional hero image (D6), tenant-scoped picker + authoritative tenant-match (R-S3.4).
             heroImageField('Zdjęcie główne'),
             ...defaultCollection.fields,
@@ -185,9 +187,11 @@ export default buildConfig({
     }),
 
     multiTenantPlugin({
+      cleanupAfterTenantDelete: false,
       collections: {
         addresses: {},
         carts: {},
+        categories: {},
         customers: {},
         // EPIC-2 (S2.8): per-tenant unavailable delivery dates — tenant stamp + panel isolation.
         'delivery-date-exceptions': {},
@@ -218,7 +222,14 @@ export default buildConfig({
             token: env.BLOB_READ_WRITE_TOKEN,
           }),
         ]
-      : []),
+      : (() => {
+          if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'test') {
+            console.warn(
+              '[media] BLOB_READ_WRITE_TOKEN not set — Media uploads use local disk. Set it via Vercel Marketplace integration for production blob storage.',
+            )
+          }
+          return []
+        })()),
   ],
 
   secret: env.PAYLOAD_SECRET,
