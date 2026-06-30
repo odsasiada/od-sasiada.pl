@@ -1,0 +1,50 @@
+<!-- @dsCard group="Components" viewport="700x280" name="Badges & alerts" subtitle="Order-status badges, stock pills, and tonal inline alerts" -->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-page); font-family: var(--font-body); }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .alerts { display: grid; gap: 10px; max-width: 460px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { Badge, StatusBadge, Alert } = window.OdSSiadaDesignSystem_16cae9
+  function Demo() {
+    return (
+      <>
+        <div className="row">
+          <StatusBadge status="new" />
+          <StatusBadge status="confirmed" />
+          <StatusBadge status="preparing" />
+          <StatusBadge status="out_for_delivery" />
+          <StatusBadge status="delivered" />
+          <StatusBadge status="cancelled" />
+        </div>
+        <div className="row">
+          <Badge tone="warning">Zostały 3 sztuki</Badge>
+          <Badge tone="accent">Sezonowe</Badge>
+          <Badge tone="brand">Nowość</Badge>
+          <Badge tone="neutral">Bez glutenu</Badge>
+        </div>
+        <div className="alerts">
+          <Alert tone="success" title="Dziękujemy! Zamówienie #2024-118 przyjęte.">
+            Zadzwonimy, żeby potwierdzić dostawę. Płatność gotówką przy odbiorze.
+          </Alert>
+          <Alert tone="error">Minimalna wartość zamówienia to 30,00 zł. Dorzuć jeszcze za 8,00 zł.</Alert>
+        </div>
+      </>
+    )
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>)
+</script>
+</body>
+</html>

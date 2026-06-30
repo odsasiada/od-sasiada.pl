@@ -1,0 +1,33 @@
+<!-- @dsCard group="Colors" viewport="700x176" name="Semantic states" subtitle="Success = green, warning = soft amber (low stock), error = muted brick." -->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px; background: var(--surface-page); display: flex; gap: 12px; flex-wrap: wrap; }
+  .state { flex: 1; min-width: 200px; border-radius: var(--radius-lg); padding: 12px 14px; display: flex; flex-direction: column; gap: 6px; }
+  .state .dot { width: 12px; height: 12px; border-radius: 999px; }
+  .state .lbl { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .state .msg { font-size: 13px; }
+  .hex { font-family: var(--font-mono); font-size: 11px; opacity: .75; }
+</style>
+</head>
+<body>
+  <div class="state" style="background:var(--state-success-bg)">
+    <span class="lbl" style="color:var(--state-success)"><span class="dot" style="background:var(--state-success)"></span>Sukces</span>
+    <span class="msg" style="color:var(--green-800)">Zamówienie złożone. Zadzwonimy, żeby potwierdzić.</span>
+    <span class="hex" style="color:var(--green-800)">green-600 · bg green-50</span>
+  </div>
+  <div class="state" style="background:var(--state-warning-bg)">
+    <span class="lbl" style="color:var(--state-warning)"><span class="dot" style="background:var(--state-warning)"></span>Uwaga</span>
+    <span class="msg" style="color:var(--amber-700)">Zostały już tylko 3 sztuki — bierz, póki są.</span>
+    <span class="hex" style="color:var(--amber-700)">amber-600 · bg amber-50</span>
+  </div>
+  <div class="state" style="background:var(--state-error-bg)">
+    <span class="lbl" style="color:var(--state-error)"><span class="dot" style="background:var(--state-error)"></span>Błąd</span>
+    <span class="msg" style="color:var(--brick-700)">Minimalna wartość zamówienia to 30,00 zł.</span>
+    <span class="hex" style="color:var(--brick-700)">brick-600 · bg brick-50</span>
+  </div>
+</body>
+</html>

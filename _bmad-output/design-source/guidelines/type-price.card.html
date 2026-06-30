@@ -1,0 +1,23 @@
+<!-- @dsCard group="Type" viewport="700x150" name="Prices" subtitle="Tabular lining numerals, heavy weight, high contrast. PLN, comma decimal." -->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 24px; background: var(--surface-card); font-family: var(--font-body); display: flex; align-items: baseline; gap: 36px; flex-wrap: wrap; }
+  .price { font-family: var(--font-price); font-weight: var(--fw-price); color: var(--text-price); font-feature-settings: var(--price-feature); }
+  .lg { font-size: var(--text-price-lg); }
+  .md { font-size: var(--text-price-md); }
+  .sm { font-size: var(--text-price-sm); }
+  .unit { color: var(--text-muted); font-weight: 500; font-size: var(--text-sm); }
+  .meta { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); flex-basis: 100%; }
+</style>
+</head>
+<body>
+  <span class="price lg">44,00&nbsp;zł <span class="unit">/ 1 L</span></span>
+  <span class="price md">7,50&nbsp;zł <span class="unit">/ kg</span></span>
+  <span class="price sm">1,30&nbsp;zł <span class="unit">/ szt.</span></span>
+  <div class="meta">Hanken Grotesk · tnum + lnum · przecinek jako separator · „zł" po liczbie</div>
+</body>
+</html>

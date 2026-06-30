@@ -1,0 +1,60 @@
+<!-- @dsCard group="Components" viewport="700x320" name="Buttons" subtitle="Primary green, terracotta CTA, secondary, ghost, danger, link · sizes · disabled" -->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+  body { margin: 0; padding: 22px 24px; background: var(--surface-page); font-family: var(--font-body); }
+  .row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .lbl { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); width: 78px; flex-shrink: 0; }
+  svg.lucide { width: 18px; height: 18px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const { Button, IconButton } = window.OdSSiadaDesignSystem_16cae9
+  const Ic = (n) => <i data-lucide={n}></i>
+  function Demo() {
+    return (
+      <>
+        <div className="row">
+          <span className="lbl">variant</span>
+          <Button variant="primary">Złóż zamówienie</Button>
+          <Button variant="cta" leadingIcon={Ic('shopping-basket')}>Dodaj do koszyka</Button>
+          <Button variant="secondary">Anuluj</Button>
+          <Button variant="ghost">Wróć do katalogu</Button>
+          <Button variant="danger">Usuń</Button>
+          <Button variant="link">Nie pamiętasz hasła?</Button>
+        </div>
+        <div className="row">
+          <span className="lbl">size</span>
+          <Button variant="cta" size="sm">sm</Button>
+          <Button variant="cta" size="md">md</Button>
+          <Button variant="cta" size="lg">lg</Button>
+          <Button variant="primary" disabled>disabled</Button>
+        </div>
+        <div className="row">
+          <span className="lbl">icon-only</span>
+          <IconButton aria-label="Koszyk" variant="outline">{Ic('shopping-cart')}</IconButton>
+          <IconButton aria-label="Konto" variant="ghost">{Ic('user-round')}</IconButton>
+          <IconButton aria-label="Usuń" variant="danger">{Ic('trash-2')}</IconButton>
+        </div>
+        <div className="row" data-tenant style={{'--tenant-accent':'#7a5cc4','--tenant-accent-strong':'#634aa6'}}>
+          <span className="lbl">[tenant]</span>
+          <Button variant="cta" leadingIcon={Ic('shopping-basket')}>CTA dziedziczy akcent sprzedawcy</Button>
+        </div>
+      </>
+    )
+  }
+  ReactDOM.createRoot(document.getElementById('root')).render(<Demo/>)
+  setTimeout(() => window.lucide && window.lucide.createIcons(), 60)
+</script>
+</body>
+</html>

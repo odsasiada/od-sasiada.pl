@@ -1,0 +1,26 @@
+/* ════════════════════════════════════════════════════════════════════════
+   od-sąsiada.pl · Design System — global stylesheet entry point
+   ────────────────────────────────────────────────────────────────────────
+   Link THIS one file in a consuming app. It is an import manifest only —
+   no rules live here. Everything it transitively imports (tokens + fonts +
+   base resets) ships to consumers.
+
+   Local, neighbourly marketplace. Warm paper surfaces, leading green,
+   terracotta CTA. Tailwind + shadcn/ui friendly (HSL channel tokens in
+   semantic.css). Per-tenant accent theming via [data-tenant].
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Fonts first (declares @font-face / loads webfonts) */
+@import './tokens/fonts.css';
+
+/* Foundations */
+@import './tokens/palette.css';      /* raw colour scales */
+@import './tokens/semantic.css';     /* shadcn tokens + brand roles + dark + tenant */
+@import './tokens/typography.css';   /* type scale, weights, price role */
+@import './tokens/spacing.css';      /* 4px grid, layout */
+@import './tokens/radius.css';       /* soft corners */
+@import './tokens/elevation.css';    /* soft warm shadows */
+@import './tokens/motion.css';       /* durations, easings */
+
+/* Element defaults */
+@import './tokens/base.css';
