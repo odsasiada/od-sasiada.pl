@@ -20,33 +20,35 @@ export default async function AccountPage({ params }: { params: Promise<{ tenant
   const addresses = customer ? await getCustomerAddresses(tenant.id) : []
 
   return (
-    <main className='container'>
-      <Link className='link-back' href={`/${slug}`}>
-        ← Back to catalog
+    <main className='shop-main'>
+      <Link className='shop-back' href={`/${slug}`}>
+        ← Wróć do sklepu
       </Link>
-      <h1>Your account</h1>
+      <h1 className='shop-h1'>Twoje konto</h1>
 
       {customer ? (
-        <div className='account-box'>
+        <div className='max-w-[420px] rounded-[var(--radius-lg)] border border-border-hairline bg-surface-card p-5'>
           <p>
-            Logged in as{' '}
+            Zalogowano jako{' '}
             <strong>
               {customer.firstName} {customer.lastName}
             </strong>{' '}
             ({customer.email}).
           </p>
-          <p>
-            <Link className='link-back' href={`/${slug}/moje-zamowienia`}>
-              My orders →
+          <p className='mt-2'>
+            <Link className='font-semibold text-brand-strong hover:underline' href={`/${slug}/moje-zamowienia`}>
+              Moje zamówienia →
             </Link>
           </p>
-          <LogoutButton slug={slug} />
+          <div className='mt-2'>
+            <LogoutButton slug={slug} />
+          </div>
         </div>
       ) : (
         <AccountForm slug={slug} tenantId={tenant.id} />
       )}
 
-      {customer && <AddressBook addresses={addresses} tenantId={tenant.id} />}
+      {customer ? <AddressBook addresses={addresses} tenantId={tenant.id} /> : null}
     </main>
   )
 }

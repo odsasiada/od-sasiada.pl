@@ -1,0 +1,21 @@
+/* ── od-sąsiada.pl · Elevation (shadows) ────────────────────────────────────
+   Soft and low. Warm-tinted shadows (a hint of the stone/ink, not pure black)
+   so cards feel like they rest on paper, not float in a void. Keep elevation
+   restrained — this is a calm neighbourhood marketplace.
+   Shadow colour is keyed off the warm ink so it reads natural on the cream
+   page; bump the alpha rather than going darker. */
+
+:root {
+  --shadow-color: 60 8% 20%; /* @kind color */
+
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+  --shadow-sm: 0 1px 3px hsl(var(--shadow-color) / 0.08), 0 1px 2px hsl(var(--shadow-color) / 0.04);
+  --shadow-md: 0 2px 6px hsl(var(--shadow-color) / 0.08), 0 4px 12px hsl(var(--shadow-color) / 0.06);
+  --shadow-lg: 0 8px 24px hsl(var(--shadow-color) / 0.1), 0 2px 6px hsl(var(--shadow-color) / 0.06);
+  --shadow-xl: 0 16px 40px hsl(var(--shadow-color) / 0.14), 0 4px 12px hsl(var(--shadow-color) / 0.08);
+
+  /* Focus ring (keyboard) — green halo, used with outline or box-shadow */
+  --ring-focus: 0 0 0 3px hsl(var(--ring) / 0.35);
+  /* Inset hairline for inputs on white */
+  --shadow-inset: inset 0 1px 2px hsl(var(--shadow-color) / 0.05);
+}

@@ -7,6 +7,10 @@ import { useState } from 'react'
 
 import { type Contact, placeOrder } from '@/app/(frontend)/[tenant]/actions'
 import { useCart } from '@/components/shop/cart-store'
+import { Field } from '@/components/shop/ui/Field'
+import { QuantityStepper } from '@/components/shop/ui/QuantityStepper'
+import { Select } from '@/components/shop/ui/Select'
+import { Button } from '@/components/ui/button'
 import { formatSlotLabel } from '@/lib/delivery-slots'
 import { formatPLN, type SavedAddress } from '@/lib/money'
 
@@ -88,104 +92,105 @@ export const CartView = ({
 
   if (orderNumber) {
     return (
-      <main className='container'>
-        <div className='alert alert-ok'>
-          <strong>Thank you! Order {orderNumber} has been placed.</strong>
-          <p>We will call to confirm delivery. Payment by cash/bank transfer on delivery.</p>
+      <main className='shop-main'>
+        <div className='shop-alert shop-alert-ok'>
+          <strong>Dziękujemy! Zamówienie {orderNumber} zostało złożone.</strong>
+          <p className='mt-1'>Zadzwonimy, aby potwierdzić dostawę. Płatność gotówką przy odbiorze.</p>
         </div>
-        <Link className='link-back' href={`/${slug}`}>
-          ← Back to catalog
+        <Link className='shop-back' href={`/${slug}`}>
+          ← Wróć do sklepu
         </Link>
       </main>
     )
   }
 
   return (
-    <main className='container'>
-      <Link className='link-back' href={`/${slug}`}>
-        ← Back to catalog
+    <main className='shop-main'>
+      <Link className='shop-back' href={`/${slug}`}>
+        ← Wróć do sklepu
       </Link>
-      <h1>Your cart</h1>
+      <h1 className='shop-h1'>Twój koszyk</h1>
 
       {items.length === 0 ? (
-        <p className='empty'>Cart is empty.</p>
+        <p className='text-text-muted'>Koszyk jest pusty.</p>
       ) : (
         <>
           {items.map((i) => (
-            <div className='cart-row' key={i.key}>
+            <div className='flex items-center justify-between gap-3 border-b border-border-hairline py-3' key={i.key}>
               <div>
-                <div className='cart-name'>{i.title}</div>
-                {i.variantLabel && <div className='cart-variant'>{i.variantLabel.replace(`${i.title} — `, '')}</div>}
-                <div className='cart-variant'>{formatPLN(i.priceInPLN)} / pcs.</div>
+                <div className='font-semibold text-text-body'>{i.title}</div>
+                {i.variantLabel ? (
+                  <div className='text-xs text-text-muted'>{i.variantLabel.replace(`${i.title} — `, '')}</div>
+                ) : null}
+                <div className='text-xs text-text-muted'>{formatPLN(i.priceInPLN)} / szt.</div>
               </div>
-              <div className='qty'>
-                <button onClick={() => setQuantity(i.key, i.quantity - 1)} type='button'>
-                  −
-                </button>
-                <span>{i.quantity}</span>
-                <button onClick={() => setQuantity(i.key, i.quantity + 1)} type='button'>
-                  +
-                </button>
-              </div>
-              <div>
-                <strong>{formatPLN(i.priceInPLN * i.quantity)}</strong>{' '}
-                <button className='qty' onClick={() => remove(i.key)} type='button'>
+              <QuantityStepper onChange={(next) => setQuantity(i.key, next)} value={i.quantity} />
+              <div className='flex items-center gap-2'>
+                <strong className='tabular-nums'>{formatPLN(i.priceInPLN * i.quantity)}</strong>
+                <Button
+                  aria-label='Usuń pozycję'
+                  onClick={() => remove(i.key)}
+                  size='icon-sm'
+                  type='button'
+                  variant='ghost'
+                >
                   🗑
-                </button>
+                </Button>
               </div>
             </div>
           ))}
 
-          <div className='cart-summary'>
-            <span>Total</span>
-            <span>{formatPLN(total)}</span>
+          <div className='my-4 flex justify-between text-[length:var(--text-lg)] font-bold'>
+            <span>Razem</span>
+            <span className='tabular-nums'>{formatPLN(total)}</span>
           </div>
 
-          {belowMin && (
-            <div className='alert alert-error'>
-              Minimum order value is {formatPLN(minOrderValue)}. You need {formatPLN(minOrderValue - total)} more.
+          {belowMin ? (
+            <div className='shop-alert shop-alert-error'>
+              Minimalna wartość zamówienia to {formatPLN(minOrderValue)}. Brakuje jeszcze{' '}
+              {formatPLN(minOrderValue - total)}.
             </div>
-          )}
+          ) : null}
 
-          <h2>Delivery details</h2>
+          <h2 className='shop-h2 mt-6'>Dane do dostawy</h2>
           {!isLoggedIn ? (
-            <div className='alert alert-error'>
+            <div className='shop-alert shop-alert-error'>
               <strong>Zaloguj się, aby złożyć zamówienie.</strong>
-              <p>
-                <button className='btn-primary' onClick={() => requireLogin()} type='button'>
+              <p className='mt-2'>
+                <Button onClick={() => requireLogin()} type='button' variant='cta'>
                   Zaloguj się i wróć do koszyka
-                </button>
+                </Button>
               </p>
             </div>
           ) : (
             <>
-              {addresses.length > 0 && (
-                <div className='field'>
-                  <label htmlFor='saved-address'>Choose a saved address</label>
-                  <select
-                    className='variant-select'
-                    defaultValue=''
-                    id='saved-address'
-                    onChange={(e) => applyAddress(e.target.value)}
-                  >
-                    <option value=''>— new address —</option>
+              {addresses.length > 0 ? (
+                <div className='mb-3 flex flex-col gap-1.5'>
+                  <label className='text-sm text-text-muted' htmlFor='saved-address'>
+                    Wybierz zapisany adres
+                  </label>
+                  <Select defaultValue='' id='saved-address' onChange={(e) => applyAddress(e.target.value)}>
+                    <option value=''>— nowy adres —</option>
                     {addresses.map((a) => (
                       <option key={a.id} value={String(a.id)}>
                         {a.title ? `${a.title}: ` : ''}
                         {a.addressLine1}, {a.postalCode} {a.city}
                       </option>
                     ))}
-                  </select>
+                  </Select>
                 </div>
-              )}
-              {deliveryEnabled &&
-                (availableSlots.length === 0 ? (
-                  <div className='alert alert-error'>Brak dostępnych terminów dostawy — skontaktuj się z dostawcą.</div>
+              ) : null}
+              {deliveryEnabled ? (
+                availableSlots.length === 0 ? (
+                  <div className='shop-alert shop-alert-error'>
+                    Brak dostępnych terminów dostawy — skontaktuj się z dostawcą.
+                  </div>
                 ) : (
-                  <div className='field'>
-                    <label htmlFor='delivery-slot'>Termin dostawy</label>
-                    <select
-                      className='variant-select'
+                  <div className='mb-3 flex flex-col gap-1.5'>
+                    <label className='text-sm text-text-muted' htmlFor='delivery-slot'>
+                      Termin dostawy
+                    </label>
+                    <Select
                       id='delivery-slot'
                       onChange={(e) => {
                         const picked = availableSlots.find((s) => slotValue(s) === e.target.value)
@@ -199,81 +204,69 @@ export const CartView = ({
                           {formatSlotLabel(s)}
                         </option>
                       ))}
-                    </select>
+                    </Select>
                   </div>
-                ))}
-              {error && <div className='alert alert-error'>{error}</div>}
+                )
+              ) : null}
+              {error ? <div className='shop-alert shop-alert-error'>{error}</div> : null}
               <form onSubmit={onSubmit}>
-                <div className='field'>
-                  <label htmlFor='firstName'>First name</label>
-                  <input
-                    id='firstName'
-                    onChange={(e) => setContact({ ...contact, firstName: e.target.value })}
-                    required
-                    value={contact.firstName}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='lastName'>Last name</label>
-                  <input
-                    id='lastName'
-                    onChange={(e) => setContact({ ...contact, lastName: e.target.value })}
-                    required
-                    value={contact.lastName}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='phone'>Phone</label>
-                  <input
-                    id='phone'
-                    onChange={(e) => setContact({ ...contact, phone: e.target.value })}
-                    required
-                    value={contact.phone}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='addressLine1'>Address (street & number)</label>
-                  <input
-                    id='addressLine1'
-                    onChange={(e) => setContact({ ...contact, addressLine1: e.target.value })}
-                    required
-                    value={contact.addressLine1}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='postalCode'>Postal code</label>
-                  <input
-                    id='postalCode'
-                    onChange={(e) => setContact({ ...contact, postalCode: e.target.value })}
-                    required
-                    value={contact.postalCode}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='city'>City</label>
-                  <input
-                    id='city'
-                    onChange={(e) => setContact({ ...contact, city: e.target.value })}
-                    required
-                    value={contact.city}
-                  />
-                </div>
-                <div className='field'>
-                  <label htmlFor='email'>Email (optional)</label>
-                  <input
-                    id='email'
-                    onChange={(e) => setContact({ ...contact, email: e.target.value })}
-                    type='email'
-                    value={contact.email}
-                  />
-                </div>
-                <button
-                  className='btn-primary'
+                <Field
+                  id='firstName'
+                  label='Imię'
+                  onChange={(e) => setContact({ ...contact, firstName: e.target.value })}
+                  required
+                  value={contact.firstName}
+                />
+                <Field
+                  id='lastName'
+                  label='Nazwisko'
+                  onChange={(e) => setContact({ ...contact, lastName: e.target.value })}
+                  required
+                  value={contact.lastName}
+                />
+                <Field
+                  id='phone'
+                  label='Telefon'
+                  onChange={(e) => setContact({ ...contact, phone: e.target.value })}
+                  required
+                  value={contact.phone}
+                />
+                <Field
+                  id='addressLine1'
+                  label='Adres (ulica i numer)'
+                  onChange={(e) => setContact({ ...contact, addressLine1: e.target.value })}
+                  required
+                  value={contact.addressLine1}
+                />
+                <Field
+                  id='postalCode'
+                  label='Kod pocztowy'
+                  onChange={(e) => setContact({ ...contact, postalCode: e.target.value })}
+                  required
+                  value={contact.postalCode}
+                />
+                <Field
+                  id='city'
+                  label='Miejscowość'
+                  onChange={(e) => setContact({ ...contact, city: e.target.value })}
+                  required
+                  value={contact.city}
+                />
+                <Field
+                  id='email'
+                  label='E-mail'
+                  onChange={(e) => setContact({ ...contact, email: e.target.value })}
+                  optional
+                  type='email'
+                  value={contact.email}
+                />
+                <Button
                   disabled={belowMin || submitting || (deliveryEnabled && !selectedSlot)}
                   type='submit'
+                  variant='cta'
                 >
-                  {submitting ? 'Placing order…' : 'Place order (cash on delivery)'}
-                </button>
+                  {submitting ? 'Składanie zamówienia…' : 'Zamawiam (gotówka przy odbiorze)'}
+                </Button>
               </form>
             </>
           )}

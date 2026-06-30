@@ -1,0 +1,168 @@
+/* ── od-sąsiada.pl · Semantic colour roles ──────────────────────────────────
+   Two coordinated layers sit on top of palette.css:
+
+   1. shadcn/ui tokens — HSL *channel* triplets (no hsl() wrapper) so a Tailwind
+      config can do  colors: { primary: 'hsl(var(--primary))' }.  These are the
+      contract shadcn components expect (--background, --foreground, --primary,
+      --accent, --muted, --border, --ring, --card, --destructive, …).
+   2. Brand role aliases — full colours mapped from the palette, used by the
+      hand-authored components & specimen cards in this design system
+      (--surface-page, --text-body, --border-hairline, …).
+
+   Dark mode lives under .dark / [data-theme="dark"].
+   Per-tenant theming lives at the bottom: a tenant container overrides ONLY the
+   accent + ring (and drops in its own logo). The skeleton never changes. */
+
+:root {
+  /* ---- shadcn/ui semantic tokens (HSL channels) ---- */
+  --background: 48 24% 96%; /* @kind color */
+  --foreground: 144 7% 13%; /* @kind color */
+
+  --card: 0 0% 100%; /* @kind color */
+  --card-foreground: 144 7% 13%; /* @kind color */
+
+  --popover: 0 0% 100%; /* @kind color */
+  --popover-foreground: 144 7% 13%; /* @kind color */
+
+  --primary: 133 44% 33%; /* @kind color */
+  --primary-foreground: 0 0% 100%; /* @kind color */
+
+  --secondary: 40 17% 92%; /* @kind color */
+  --secondary-foreground: 144 7% 13%; /* @kind color */
+
+  --muted: 40 17% 92%; /* @kind color */
+  --muted-foreground: 130 3% 43%; /* @kind color */
+
+  --accent: 14 56% 50%; /* @kind color */
+  --accent-foreground: 0 0% 100%; /* @kind color */
+
+  --destructive: 0 69% 36%; /* @kind color */
+  --destructive-foreground: 0 0% 100%; /* @kind color */
+
+  --success: 133 44% 33%; /* @kind color */
+  --success-foreground: 0 0% 100%; /* @kind color */
+
+  --warning: 38 73% 42%; /* @kind color */
+  --warning-foreground: 0 0% 100%; /* @kind color */
+
+  --border: 48 16% 87%; /* @kind color */
+  --input: 48 16% 87%; /* @kind color */
+  --ring: 133 44% 33%; /* @kind color */
+
+  --radius: 0.75rem; /* @kind radius */
+
+  /* ---- Brand role aliases (full colours, used by this DS) ---- */
+  --surface-page: var(--stone-100); /* @kind color */
+  --surface-card: var(--white); /* @kind color */
+  --surface-sunken: var(--stone-200); /* @kind color */
+  --surface-inverse: var(--green-700); /* @kind color */
+
+  --text-body: var(--stone-900); /* @kind color */
+  --text-muted: var(--stone-700); /* @kind color */
+  --text-faint: var(--stone-600); /* @kind color */
+  --text-on-brand: var(--white); /* @kind color */
+  --text-price: var(--stone-900); /* @kind color */
+
+  --border-hairline: var(--stone-300); /* @kind color */
+  --border-strong: var(--stone-400); /* @kind color */
+  --border-focus: var(--green-600); /* @kind color */
+
+  --brand: var(--green-600); /* @kind color */
+  --brand-strong: var(--green-700); /* @kind color */
+  --accent-cta: var(--terracotta-500); /* @kind color */
+  --accent-cta-strong: var(--terracotta-600); /* @kind color */
+
+  --state-success: var(--green-600); /* @kind color */
+  --state-success-bg: var(--green-50); /* @kind color */
+  --state-warning: var(--amber-600); /* @kind color */
+  --state-warning-bg: var(--amber-50); /* @kind color */
+  --state-error: var(--brick-600); /* @kind color */
+  --state-error-bg: var(--brick-50); /* @kind color */
+
+  /* Per-tenant accent — defaults to the global terracotta CTA.
+     A tenant scope (below) overrides ONLY these two. */
+  --tenant-accent: var(--terracotta-500); /* @kind color */
+  --tenant-accent-strong: var(--terracotta-600); /* @kind color */
+}
+
+/* ── Dark mode ──────────────────────────────────────────────────────────────
+   Warm charcoal, not pure black. Greens lift, terracotta stays warm. */
+.dark,
+[data-theme="dark"] {
+  --background: 60 6% 9%; /* @kind color */
+  --foreground: 48 14% 92%; /* @kind color */
+
+  --card: 60 5% 12%; /* @kind color */
+  --card-foreground: 48 14% 92%; /* @kind color */
+
+  --popover: 60 5% 12%; /* @kind color */
+  --popover-foreground: 48 14% 92%; /* @kind color */
+
+  --primary: 133 40% 52%; /* @kind color */
+  --primary-foreground: 144 30% 10%; /* @kind color */
+
+  --secondary: 60 4% 18%; /* @kind color */
+  --secondary-foreground: 48 14% 92%; /* @kind color */
+
+  --muted: 60 4% 18%; /* @kind color */
+  --muted-foreground: 48 8% 64%; /* @kind color */
+
+  --accent: 14 62% 58%; /* @kind color */
+  --accent-foreground: 20 30% 10%; /* @kind color */
+
+  --destructive: 2 58% 56%; /* @kind color */
+  --destructive-foreground: 0 0% 100%; /* @kind color */
+
+  --success: 133 40% 52%; /* @kind color */
+  --success-foreground: 144 30% 10%; /* @kind color */
+
+  --warning: 38 70% 56%; /* @kind color */
+  --warning-foreground: 38 40% 10%; /* @kind color */
+
+  --border: 60 4% 22%; /* @kind color */
+  --input: 60 4% 22%; /* @kind color */
+  --ring: 133 40% 52%; /* @kind color */
+
+  /* Brand role aliases re-pointed for dark */
+  --surface-page: hsl(60 6% 9%); /* @kind color */
+  --surface-card: hsl(60 5% 12%); /* @kind color */
+  --surface-sunken: hsl(60 4% 16%); /* @kind color */
+  --surface-inverse: var(--green-800); /* @kind color */
+
+  --text-body: hsl(48 14% 92%); /* @kind color */
+  --text-muted: hsl(48 8% 64%); /* @kind color */
+  --text-faint: hsl(48 6% 52%); /* @kind color */
+  --text-price: hsl(48 14% 95%); /* @kind color */
+
+  --border-hairline: hsl(60 4% 22%); /* @kind color */
+  --border-strong: hsl(60 4% 30%); /* @kind color */
+
+  --brand: var(--green-400); /* @kind color */
+  --brand-strong: var(--green-300); /* @kind color */
+  --accent-cta: var(--terracotta-400); /* @kind color */
+  --accent-cta-strong: var(--terracotta-300); /* @kind color */
+
+  --state-success-bg: hsl(133 30% 14%); /* @kind color */
+  --state-warning-bg: hsl(38 40% 14%); /* @kind color */
+  --state-error-bg: hsl(2 40% 16%); /* @kind color */
+}
+
+/* ── Per-tenant theming ─────────────────────────────────────────────────────
+   Architecture requirement: a global od-sąsiada.pl identity + a LIGHT
+   per-seller layer. A tenant scope overrides ONLY the accent (and supplies its
+   own logo via --tenant-logo). Skeleton — surfaces, neutrals, typography,
+   components — stays identical so the shopper always feels they're on
+   od-sąsiada.pl.
+
+   Usage in product:
+     <div data-tenant style="--tenant-accent:#7a5cc4; --tenant-accent-strong:#634aa6">
+       … seller's mini-shop …
+     </div>
+   Components that read --accent-cta should fall back to the tenant accent:
+     background: var(--tenant-accent, var(--accent-cta)); */
+[data-tenant] {
+  --accent-cta: var(--tenant-accent); /* @kind color */
+  --accent-cta-strong: var(--tenant-accent-strong); /* @kind color */
+  --accent: var(--tenant-accent); /* @kind color */
+  --ring: var(--ring); /* @kind color */
+}

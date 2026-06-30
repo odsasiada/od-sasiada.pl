@@ -1,9 +1,11 @@
+import type { OrderStatusValue } from '@/ecommerce/order-status'
+
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
 import { ReorderButton } from '@/components/shop/ReorderButton'
-import { ORDER_STATUS_LABELS } from '@/ecommerce/order-status'
+import { StatusBadge } from '@/components/shop/ui/Badge'
 import { getCurrentCustomer } from '@/lib/auth'
 import { formatPLN, getTenantBySlug } from '@/lib/shop'
 import config from '@/payload.config'
@@ -30,15 +32,15 @@ export default async function MyOrdersPage({ params }: { params: Promise<{ tenan
 
   if (!customer) {
     return (
-      <main className='container'>
-        <Link className='link-back' href={`/${slug}`}>
-          ← Back to catalog
+      <main className='shop-main'>
+        <Link className='shop-back' href={`/${slug}`}>
+          ← Wróć do sklepu
         </Link>
-        <h1>My orders</h1>
-        <p className='empty'>
-          To see your orders,{' '}
-          <Link className='link-back' href={`/${slug}/konto`}>
-            log in
+        <h1 className='shop-h1'>Moje zamówienia</h1>
+        <p className='text-text-muted'>
+          Aby zobaczyć swoje zamówienia,{' '}
+          <Link className='font-semibold text-brand-strong hover:underline' href={`/${slug}/konto`}>
+            zaloguj się
           </Link>
           .
         </p>
@@ -60,33 +62,31 @@ export default async function MyOrdersPage({ params }: { params: Promise<{ tenan
   })
 
   return (
-    <main className='container'>
-      <Link className='link-back' href={`/${slug}`}>
-        ← Back to catalog
+    <main className='shop-main'>
+      <Link className='shop-back' href={`/${slug}`}>
+        ← Wróć do sklepu
       </Link>
-      <h1>My orders</h1>
-      <p className='tenant-meta'>
-        Logged in as {customer.firstName} {customer.lastName} ·{' '}
-        <Link className='link-back' href={`/${slug}/konto`}>
-          account
+      <h1 className='shop-h1'>Moje zamówienia</h1>
+      <p className='shop-meta'>
+        Zalogowano jako {customer.firstName} {customer.lastName} ·{' '}
+        <Link className='font-semibold text-brand-strong hover:underline' href={`/${slug}/konto`}>
+          konto
         </Link>
       </p>
 
       {orders.docs.length === 0 ? (
-        <p className='empty'>You have no orders yet.</p>
+        <p className='mt-4 text-text-muted'>Nie masz jeszcze zamówień.</p>
       ) : (
         orders.docs.map((order) => {
           const o = order as typeof order & { items?: null | OrderItem[]; orderNumber?: string }
           return (
-            <div className='order-card' key={order.id}>
-              <div className='order-head'>
+            <div className='shop-card mt-4' key={order.id}>
+              <div className='flex items-center justify-between text-[length:var(--text-md)]'>
                 <strong>{o.orderNumber ?? `#${order.id}`}</strong>
-                <span className='status-badge'>
-                  {ORDER_STATUS_LABELS[o.status as keyof typeof ORDER_STATUS_LABELS] ?? o.status}
-                </span>
+                <StatusBadge status={o.status as OrderStatusValue} />
               </div>
-              <div className='tenant-meta'>{formatDate(order.createdAt)}</div>
-              <ul className='order-items'>
+              <div className='shop-meta'>{formatDate(order.createdAt)}</div>
+              <ul className='my-3 list-none p-0 text-text-body'>
                 {(o.items ?? []).map((it, idx) => (
                   <li key={idx}>
                     {it.quantity} × {it.productNameSnapshot}
@@ -97,9 +97,12 @@ export default async function MyOrdersPage({ params }: { params: Promise<{ tenan
                   </li>
                 ))}
               </ul>
-              <div className='order-total'>Total: {formatPLN(o.amount ?? 0)}</div>
-              <Link className='link-back' href={`/${slug}/moje-zamowienia/${order.id}`}>
-                details →
+              <div className='font-bold'>Razem: {formatPLN(o.amount ?? 0)}</div>
+              <Link
+                className='mt-1 inline-block font-semibold text-brand-strong hover:underline'
+                href={`/${slug}/moje-zamowienia/${order.id}`}
+              >
+                szczegóły →
               </Link>
               <ReorderButton orderId={order.id} slug={slug} tenantId={tenant.id} />
             </div>

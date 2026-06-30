@@ -4,8 +4,15 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 
 import { loginCustomer, registerCustomer, requestPasswordReset } from '@/app/(frontend)/[tenant]/account-actions'
+import { Field } from '@/components/shop/ui/Field'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 type Mode = 'forgot' | 'login' | 'register'
+
+const TAB = 'flex-1 rounded-md border border-border-hairline py-2 text-sm font-semibold transition-colors'
+const TAB_ACTIVE = 'border-brand bg-brand text-white'
+const TAB_IDLE = 'bg-surface-page text-text-muted hover:bg-[var(--stone-200)]'
 
 export const AccountForm = ({ slug, tenantId }: { slug: string; tenantId: number }) => {
   const router = useRouter()
@@ -34,7 +41,7 @@ export const AccountForm = ({ slug, tenantId }: { slug: string; tenantId: number
     if (mode === 'forgot') {
       await requestPasswordReset(form.email)
       setBusy(false)
-      setInfo('If the account exists, we sent an email with a password reset link.')
+      setInfo('Jeśli konto istnieje, wysłaliśmy e-mail z linkiem do zresetowania hasła.')
       return
     }
 
@@ -56,78 +63,78 @@ export const AccountForm = ({ slug, tenantId }: { slug: string; tenantId: number
   }
 
   return (
-    <div className='account-box'>
-      <div className='tabs'>
-        <button className={mode === 'login' ? 'tab active' : 'tab'} onClick={() => switchMode('login')} type='button'>
-          Log in
+    <div className='max-w-[420px] rounded-[var(--radius-lg)] border border-border-hairline bg-surface-card p-5'>
+      <div className='mb-4 flex gap-2'>
+        <button
+          className={cn(TAB, mode === 'login' ? TAB_ACTIVE : TAB_IDLE)}
+          onClick={() => switchMode('login')}
+          type='button'
+        >
+          Zaloguj się
         </button>
         <button
-          className={mode === 'register' ? 'tab active' : 'tab'}
+          className={cn(TAB, mode === 'register' ? TAB_ACTIVE : TAB_IDLE)}
           onClick={() => switchMode('register')}
           type='button'
         >
-          Register
+          Załóż konto
         </button>
       </div>
 
-      {error && <div className='alert alert-error'>{error}</div>}
-      {info && <div className='alert alert-ok'>{info}</div>}
+      {error ? <div className='shop-alert shop-alert-error'>{error}</div> : null}
+      {info ? <div className='shop-alert shop-alert-ok'>{info}</div> : null}
 
       <form onSubmit={onSubmit}>
-        {mode === 'register' && (
+        {mode === 'register' ? (
           <>
-            <div className='field'>
-              <label htmlFor='firstName'>First name</label>
-              <input id='firstName' onChange={set('firstName')} required value={form.firstName} />
-            </div>
-            <div className='field'>
-              <label htmlFor='lastName'>Last name</label>
-              <input id='lastName' onChange={set('lastName')} required value={form.lastName} />
-            </div>
-            <div className='field'>
-              <label htmlFor='phone'>Phone</label>
-              <input id='phone' onChange={set('phone')} required value={form.phone} />
-            </div>
+            <Field id='firstName' label='Imię' onChange={set('firstName')} required value={form.firstName} />
+            <Field id='lastName' label='Nazwisko' onChange={set('lastName')} required value={form.lastName} />
+            <Field id='phone' label='Telefon' onChange={set('phone')} required value={form.phone} />
           </>
-        )}
-        <div className='field'>
-          <label htmlFor='email'>E-mail</label>
-          <input id='email' onChange={set('email')} required type='email' value={form.email} />
-        </div>
-        {mode !== 'forgot' && (
-          <div className='field'>
-            <label htmlFor='password'>Password</label>
-            <input
-              id='password'
-              minLength={8}
-              onChange={set('password')}
-              required
-              type='password'
-              value={form.password}
-            />
-          </div>
-        )}
-        <button className='btn-primary' disabled={busy} type='submit'>
+        ) : null}
+        <Field id='email' label='E-mail' onChange={set('email')} required type='email' value={form.email} />
+        {mode !== 'forgot' ? (
+          <Field
+            id='password'
+            label='Hasło'
+            minLength={8}
+            onChange={set('password')}
+            required
+            type='password'
+            value={form.password}
+          />
+        ) : null}
+        <Button disabled={busy} type='submit' variant='cta'>
           {busy
-            ? 'Please wait…'
+            ? 'Proszę czekać…'
             : mode === 'login'
-              ? 'Log in'
+              ? 'Zaloguj się'
               : mode === 'register'
-                ? 'Create account'
-                : 'Send reset link'}
-        </button>
+                ? 'Załóż konto'
+                : 'Wyślij link resetujący'}
+        </Button>
       </form>
 
-      {mode === 'login' && (
-        <button className='link-button' onClick={() => switchMode('forgot')} style={{ marginTop: 12 }} type='button'>
-          Forgot your password?
-        </button>
-      )}
-      {mode === 'forgot' && (
-        <button className='link-button' onClick={() => switchMode('login')} style={{ marginTop: 12 }} type='button'>
-          ← Back to log in
-        </button>
-      )}
+      {mode === 'login' ? (
+        <Button
+          className='mt-3 px-0 text-brand-strong'
+          onClick={() => switchMode('forgot')}
+          type='button'
+          variant='link'
+        >
+          Nie pamiętasz hasła?
+        </Button>
+      ) : null}
+      {mode === 'forgot' ? (
+        <Button
+          className='mt-3 px-0 text-brand-strong'
+          onClick={() => switchMode('login')}
+          type='button'
+          variant='link'
+        >
+          ← Wróć do logowania
+        </Button>
+      ) : null}
     </div>
   )
 }

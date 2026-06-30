@@ -2,10 +2,16 @@ import type { ShopCategory } from '@/lib/shop'
 
 import Link from 'next/link'
 
+import { cn } from '@/lib/utils'
+
+const CHIP =
+  'rounded-[var(--radius-pill)] border px-3 py-1.5 text-sm transition-colors border-border-hairline text-text-body hover:bg-[var(--stone-200)]'
+const CHIP_ACTIVE = 'border-brand bg-brand text-white hover:bg-brand'
+
 /**
  * Server-rendered category filter (S3.6) — a row of query-param links (`?kategoria=<slug>`) plus
  * an "Wszystkie" reset. No client state: selecting a category is navigation + server re-render.
- * The active link is highlighted (`is-active` + `aria-current`).
+ * The active link is highlighted (`aria-current`).
  */
 export const CategoryFilter = ({
   activeSlug,
@@ -21,10 +27,10 @@ export const CategoryFilter = ({
   }
 
   return (
-    <nav aria-label='Filtr kategorii' className='category-filter'>
+    <nav aria-label='Filtr kategorii' className='mb-4 flex flex-wrap gap-2'>
       <Link
         aria-current={activeSlug ? undefined : 'page'}
-        className={activeSlug ? '' : 'is-active'}
+        className={cn(CHIP, !activeSlug && CHIP_ACTIVE)}
         href={`/${tenantSlug}`}
       >
         Wszystkie
@@ -34,7 +40,7 @@ export const CategoryFilter = ({
         return (
           <Link
             aria-current={active ? 'page' : undefined}
-            className={active ? 'is-active' : ''}
+            className={cn(CHIP, active && CHIP_ACTIVE)}
             href={`/${tenantSlug}?kategoria=${encodeURIComponent(c.slug)}`}
             key={c.id}
           >
