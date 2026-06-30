@@ -86,6 +86,6 @@ development_status:
   epic-4: in-progress
   S4.1: done # Uruchomienie seed.ts lokalnie — weryfikacja danych tenant + produkty
   S4.2: done # Przygotowanie seed produkcji (Supabase) — seed-production.ts + seed:production script
-  S4.3: in-progress # BLOCKED: prod Supabase bez schematu ('relation "tenants" does not exist') — trzeba zmigrować/seedować prod DB (zapis do prod, za zgodą operatora)
+  S4.3: in-progress # Prod zaseedowany (35 tabel, tenant + 26 produktów); /admin /swieze-z-kaszub /api/tenants = 200. Pozostaje ręczne QA checkoutu (Task 3, AC4-5)
   S4.4: review # Naprawa deploya prod — crash sharp/libvips (ERR_DLOPEN_FAILED) naprawiony + build zielony; /admin 200
   epic-4-retrospective: optional
