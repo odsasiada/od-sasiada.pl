@@ -88,3 +88,20 @@
 ## Dalszy backlog
 
 *Jeszcze nie w rozmiarze epiku: korekta wagi przy dostawie (faza 2), e-mail klienta per-tenant, łączenie gość→konto, SMS, galeria zdjęć, hierarchia kategorii. Odłożone poza MVP: fakturowanie operatora (3+ tenantów), pełne RODO.*
+
+## EPIC-4 — Seed fixtures i dane produkcyjne
+
+**Cel (= Cel Sprintu 4):** uruchomić seed.ts z pierwszym tenantem `swieze-z-kaszub` lokalnie, a następnie przenieść te dane do produkcyjnej bazy Supabase, aby aplikacja była gotowa na pilota z pierwszym dostawcą.
+
+**Status:** 🔄 w trakcie — S4.1 gotowy do realizacji.
+
+**Kolejność budowania:** `S4.1 → S4.2 → S4.3 → S4.4`
+
+### Historyjki
+
+| ID | Twierdzenie historyjki | Est. | Status | Zależy od |
+|----|------------------------|------|--------|-----------|
+| **S4.1** | Jako operator chcę uruchomić `pnpm seed` lokalnie, aby zweryfikować dane tenant `swieze-z-kaszub` i produkty (warzywa, miody, produkty pszczele, sezonowe, warianty). | S | 🔄 GOTOWE do realizacji | — (pierwsza) |
+| **S4.2** | Jako operator chcę przygotować seed produkcji (Supabase), aby dodać dane fixtures do produkcyjnej bazy. | M | ☐ TODO | S4.1 |
+| **S4.3** | Jako operator chcę zweryfikować dane na produkcji (test end-to-end), aby potwierdzić gotowość aplikacji na pilota z pierwszym dostawcą. | S | ☐ TODO | S4.2 |
+| **S4.4** | Jako operator chcę żeby aplikacja uruchamiała się na produkcji bez błędu 500 (naprawa crashu `sharp`/libvips `ERR_DLOPEN_FAILED` + typecheck builda), aby móc dokończyć weryfikację end-to-end. | S | 🔄 w trakcie | S4.3 |

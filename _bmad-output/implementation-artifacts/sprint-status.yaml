@@ -37,7 +37,7 @@
 # - Stories are ordered by build order from epics.md
 
 generated: 2026-06-20
-last_updated: 2026-06-25
+last_updated: 2026-06-30 # S4.4 dodane — naprawa deploya prod (sharp/libvips)
 project: od-sasiada.pl
 project_key: NOKEY
 tracking_system: file-system
@@ -81,3 +81,11 @@ development_status:
   S3.5: done
   S3.6: done # filtr katalogu po kategorii (server-side, tenant-scoped) — review done (1 patch fixed)
   epic-3-retrospective: optional
+
+  # EPIC-4 — Seed fixtures i dane produkcyjne (build order: S4.1 → S4.2 → S4.3)
+  epic-4: in-progress
+  S4.1: done # Uruchomienie seed.ts lokalnie — weryfikacja danych tenant + produkty
+  S4.2: done # Przygotowanie seed produkcji (Supabase) — seed-production.ts + seed:production script
+  S4.3: in-progress # BLOCKED: prod Supabase bez schematu ('relation "tenants" does not exist') — trzeba zmigrować/seedować prod DB (zapis do prod, za zgodą operatora)
+  S4.4: review # Naprawa deploya prod — crash sharp/libvips (ERR_DLOPEN_FAILED) naprawiony + build zielony; /admin 200
+  epic-4-retrospective: optional
