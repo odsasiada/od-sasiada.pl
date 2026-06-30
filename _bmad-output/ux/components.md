@@ -31,7 +31,8 @@
 ### Karta produktu — `ProductCard` ([`.d.ts`](../design-source/components/commerce/ProductCard.d.ts))
 - **Anatomia:** kafel ze zdjęciem (aspect 4/5) lub tint dla braku zdjęcia (`tone`: honey/leaf/pickle/bee/stone) + duża nazwa-poster; **chip sprzedawcy** (`seller`) — sygnał zaufania; mała etykieta kategorii; linia ceny + okrągły CTA „Dodaj do koszyka".
 - **Cena:** `price` w **groszach** (`number | null`) → `Price`. `null`/`seasonal` → „Cena sezonowa" + „Zapytaj o cenę".
-- **Stany specjalne:** `lowStock` → miękki bursztynowy badge „Zostało N"; `added` → potwierdzenie „✓ Dodano"; `variants` → `Select` nad ceną.
+- **Stany specjalne:** `added` → potwierdzenie „✓ Dodano"; `variants` → `Select` nad ceną.
+- ⚠️ **`lowStock` / „Zostało N" — kontrakt referencyjny lustra, NIE wdrożone (poza zakresem MVP):** `inventory: false` (B2) → brak źródła danych o stanie. Nie wiązać tego propa do UI bez wprowadzenia inwentarza.
 - **Per-tenant:** w `[data-tenant]` CTA przyjmuje akcent sprzedawcy.
 - Ref repo: `Catalog`.
 

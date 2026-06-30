@@ -1,6 +1,6 @@
 # PRD — od-sasiada.pl
 
-> Status: odtworzony 2026-06-20 (po Sprint 1). Poziom: Product Manager. Linki krzyżowe: [product-brief.md](./product-brief.md), [epics.md](./epics.md), [architecture.md](./architecture.md).
+> Status: zaktualizowany 2026-06-30 (po Sprintach 1–3; EPIC-1/2/3 ukończone). Poziom: Product Manager. Linki krzyżowe: [product-brief.md](./product-brief.md), [epics.md](./epics.md), [architecture.md](./architecture.md). Źródło prawdy statusu historyjek: `implementation-artifacts/stories/*`.
 
 ## 1. Cel produktu
 
@@ -69,16 +69,16 @@ Wywiedzione z dostarczonych możliwości Sprintu 1 (patrz epics.md dla pierwotny
 | **NFR2** | **Integralność cen:** wszystkie wartości pieniężne przechowywane i obliczane w groszach (liczby całkowite); pojedyncze źródło prawdy dla walidacji pozycji (`cart-validation.ts`) współdzielone przez akcje koszyka i `placeOrder`; cena klienta nigdy nie jest zaufana. |
 | **NFR3** | **Trwałość danych:** snapshoty pozycji zamówień i numer zamówienia utrzymują się niezależnie od późniejszych edycji/usunięć katalogu/cen. |
 | **NFR4** | **Odporność:** e-maile transakcyjne są best-effort — błędy SMTP są łapane i logowane, nigdy nie powodują niepowodzenia operacji zamówienia. |
-| **NFR5 | **Lokalizacja:** witryna i admin w języku polskim (`i18n` fallback `pl`); waluta PLN z symbolem `zł`. |
+| **NFR5** | **Lokalizacja:** witryna i admin w języku polskim (`i18n` fallback `pl`); waluta PLN z symbolem `zł`. |
 | **NFR6** | **Poprawność hydratacji (Next 16 + Turbopack):** pliki akcji z `'use server'` importowane przez komponenty klienckie muszą importować `next/headers` bezpośrednio i nie być podwójnie importowane przez komponenty serwerowe + klienckie, aby uniknąć cichej awarii hydratacji client-island. |
 | **NFR7** | **Środowisko dev lokalne:** Postgres działa w jednorazowym kontenerze Docker (`postgres:17`, `od-sasiada-pg`), nie Homebrew. |
 | **NFR8** | **Wydajność frontu katalogu ze zdjęciami (EPIC-3):** `next/image` + warianty `sharp` + lazy-load; LCP listy produktów mierzony i utrzymany pod kontrolą. |
 
 ## 5. Epiki
 
-- **EPIC-1 — Fundament workflow dostawcy** (Sprint 1, wszystkie 8 ticketów GOTOWE). Historyjki S1.1–S1.7 + SPIKE-A. Patrz [epics.md](./epics.md).
-- **EPIC-2 — Okna dostawy i powiadomienia o statusie** (S2, FR19–FR26): wybór okna czasowego dostawy z cutoff; **limit miejsc na slot (capacity, odporny na wyścig)**; **wyjątki dni**; e-mail o zmianie statusu (milestone'y, PL). Szczegóły: [epics.md](./epics.md) + `stories/S2.*`.
-- **EPIC-3 — Media i kategorie** (S3, FR27–FR32): zdjęcia produktów (Media per-tenant, **Vercel Blob**); **zdjęcie na produkcie i wariancie z fallbackiem**; **wiele kategorii na produkt (`hasMany`)**. Szczegóły: [epics.md](./epics.md) + `stories/S3.*`.
+- **EPIC-1 — Fundament workflow dostawcy** ✅ ukończone (Sprint 1, wszystkie 8 ticketów GOTOWE). Historyjki S1.1–S1.7 + SPIKE-A. Patrz [epics.md](./epics.md).
+- **EPIC-2 — Okna dostawy i powiadomienia o statusie** ✅ ukończone (S2, FR19–FR26; SPIKE-S2 + S2.1–S2.8 GOTOWE, S2.9 PARK): wybór okna czasowego dostawy z cutoff; **limit miejsc na slot (capacity, odporny na wyścig)**; **wyjątki dni**; e-mail o zmianie statusu (milestone'y, PL). Szczegóły: [epics.md](./epics.md) + `stories/S2.*`.
+- **EPIC-3 — Media i kategorie** ✅ ukończone (S3, FR27–FR32; SPIKE-S3 + S3.1–S3.6 GOTOWE): zdjęcia produktów (Media per-tenant, **Vercel Blob**); **zdjęcie na produkcie i wariancie z fallbackiem**; **wiele kategorii na produkt (`hasMany`)**. Szczegóły: [epics.md](./epics.md) + `stories/S3.*`.
 
 ## 6. Poza zakresem / backlog
 

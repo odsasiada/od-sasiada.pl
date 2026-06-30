@@ -15,13 +15,15 @@ Ref: [`templates/shop-page/ShopPage.dc.html`](../design-source/templates/shop-pa
 
 Ref repo: `Catalog`, `CategoryFilter`. Kit: [`CatalogScreen.jsx`](../design-source/ui_kits/shop/CatalogScreen.jsx).
 
-- Siatka kart, filtr kategorii (server-side), tinty dla produktów bez zdjęcia.
+- Siatka kart, filtr kategorii (server-side, `CategoryFilter`), tinty dla produktów bez zdjęcia (`--tint-stone`).
 - Stany: ładowanie, pusto (sąsiedzka mikrokopia — patrz [voice-and-tone.md](./voice-and-tone.md)).
-- Sygnały: badge „Sezonowe" (cena `null`), bursztynowy „Zostało N" (low stock).
+- Sygnały: badge „Sezonowe" (cena `null`).
+- ⚠️ **Low-stock („Zostało N") — NIE wdrożone i poza zakresem MVP:** śledzenie stanu jest wyłączone (`inventory: false`, decyzja B2 w architekturze), więc nie ma źródła danych dla licznika sztuk. Nie implementować bez wprowadzenia inwentarza.
 
 ## Strona produktu
 
-- Galeria zdjęć, wybór wariantu (`Select`), **cena** (PLN, grosze → `src/lib/money.ts` / `Price`), CTA „Dodaj do koszyka".
+- **Pojedyncze hero** (jedno zdjęcie; decyzja D2 — galeria odłożona do backlogu), wybór wariantu (`Select`), **cena** (PLN, grosze → `src/lib/money.ts` / `Price`), CTA „Dodaj do koszyka".
+- Fallback zdjęcia: **wariant → produkt → placeholder/tint** (`resolveProductImage`, D3); zdjęcie opcjonalne (D6).
 - Chip sprzedawcy widoczny — zaufanie.
 
 ## Karta sprzedawcy / branding tenanta
@@ -36,6 +38,12 @@ Ref repo: `CartView`, `ReorderButton`. Kit: [`CartScreen.jsx`](../design-source/
 
 - Koszyk: linie z `Price`, `QuantityStepper`, suma.
 - **Checkout gotówkowy = minimum tarcia:** najmniej pól, jasne CTA, brak płatności online.
+- **Wybór terminu dostawy** (sekcja „Dane do dostawy", `CartView` — EPIC-2):
+  - `Select` „Termin dostawy" z placeholderem „— wybierz termin —"; etykiety przez `formatSlotLabel` (dzień + okno).
+  - Lista pokazuje **tylko realne wystąpienia** — sloty po cutoffie / w dniu-wyjątku / pełne (capacity) są odfiltrowane serwerowo; walidacja autorytatywna w `placeOrder` (cutoff S2.3, capacity odporne na wyścig S2.7).
+  - **Stan pusty:** „Brak dostępnych terminów dostawy — skontaktuj się z dostawcą."
+  - **Slot wymagany, gdy tenant ma okna** (O8): CTA złożenia zamówienia zablokowane do wyboru terminu; tenant bez okien → sekcja ukryta, checkout jak w EPIC-1.
+  - Wybrany termin jest **snapshotem** w zamówieniu — widoczny w panelu, na froncie i w mailu potwierdzającym (S2.4).
 - „Ponów zamówienie" (`ReorderButton`) dla powracających.
 
 ## Profil / konto klienta
