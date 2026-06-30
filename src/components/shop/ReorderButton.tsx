@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { reorder } from '@/app/(frontend)/[tenant]/actions'
+import { Button } from '@/components/ui/button'
 
 export const ReorderButton = ({ orderId, slug, tenantId }: { orderId: number; slug: string; tenantId: number }) => {
   const router = useRouter()
@@ -31,11 +32,11 @@ export const ReorderButton = ({ orderId, slug, tenantId }: { orderId: number; sl
     })
 
   return (
-    <div className='reorder'>
-      <button className='btn-primary' disabled={pending} onClick={onClick} type='button'>
+    <div className='mt-3 flex items-center gap-2'>
+      <Button disabled={pending} onClick={onClick} type='button' variant='cta'>
         {pending ? 'Dodawanie…' : '↻ Zamów ponownie'}
-      </button>
-      {error && <span className='reorder-error'>{error}</span>}
+      </Button>
+      {error ? <span className='text-xs text-[color:var(--state-error)]'>{error}</span> : null}
     </div>
   )
 }

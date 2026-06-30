@@ -33,7 +33,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/src/payload-types.ts", "!**/src/importMap.js"]
+    "includes": ["**", "!**/src/payload-types.ts", "!**/src/importMap.js", "!**/_bmad-output"]
   },
   "formatter": {
     "enabled": true,

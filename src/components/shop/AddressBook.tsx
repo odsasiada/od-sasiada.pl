@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 
 import { deleteAddress, saveAddress } from '@/app/(frontend)/[tenant]/address-actions'
+import { Field } from '@/components/shop/ui/Field'
+import { Button } from '@/components/ui/button'
 
 const EMPTY: AddressInput = {
   addressLine1: '',
@@ -49,72 +51,76 @@ export const AddressBook = ({ addresses, tenantId }: { addresses: SavedAddress[]
     })
 
   return (
-    <section className='address-book'>
-      <h2>My delivery addresses</h2>
+    <section className='mt-6'>
+      <h2 className='shop-h2'>Moje adresy dostawy</h2>
 
-      {addresses.length === 0 && !adding && <p className='empty'>No saved addresses yet.</p>}
+      {addresses.length === 0 && !adding ? <p className='text-text-muted'>Brak zapisanych adresów.</p> : null}
 
       {addresses.map((a) => (
-        <div className='address-card' key={a.id}>
+        <div
+          className='mb-3 flex items-start justify-between gap-3 rounded-[var(--radius-lg)] border border-border-hairline bg-surface-card px-4 py-3'
+          key={a.id}
+        >
           <div>
-            {a.title && <div className='cart-name'>{a.title}</div>}
+            {a.title ? <div className='font-semibold text-text-body'>{a.title}</div> : null}
             <div>
               {a.firstName} {a.lastName}, tel. {a.phone}
             </div>
-            <div className='cart-variant'>
+            <div className='text-xs text-text-muted'>
               {a.addressLine1}, {a.postalCode} {a.city}
             </div>
           </div>
-          <button className='link-button' disabled={pending} onClick={() => onDelete(a.id)} type='button'>
-            Delete
-          </button>
+          <Button
+            className='px-0 text-brand-strong'
+            disabled={pending}
+            onClick={() => onDelete(a.id)}
+            type='button'
+            variant='link'
+          >
+            Usuń
+          </Button>
         </div>
       ))}
 
       {adding ? (
-        <form className='address-form' onSubmit={onSave}>
-          {error && <div className='alert alert-error'>{error}</div>}
-          <div className='field'>
-            <label htmlFor='a-title'>Address label (e.g. Home)</label>
-            <input id='a-title' onChange={set('title')} value={form.title ?? ''} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-firstName'>First name</label>
-            <input id='a-firstName' onChange={set('firstName')} required value={form.firstName} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-lastName'>Last name</label>
-            <input id='a-lastName' onChange={set('lastName')} required value={form.lastName} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-phone'>Phone</label>
-            <input id='a-phone' onChange={set('phone')} required value={form.phone} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-line1'>Address (street & number)</label>
-            <input id='a-line1' onChange={set('addressLine1')} required value={form.addressLine1} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-postal'>Postal code</label>
-            <input id='a-postal' onChange={set('postalCode')} placeholder='83-300' required value={form.postalCode} />
-          </div>
-          <div className='field'>
-            <label htmlFor='a-city'>City</label>
-            <input id='a-city' onChange={set('city')} required value={form.city} />
-          </div>
-          <div className='reorder'>
-            <button className='btn-primary' disabled={pending} type='submit'>
-              {pending ? 'Saving…' : 'Save address'}
-            </button>
-            <button className='link-button' onClick={() => setAdding(false)} type='button'>
-              Cancel
-            </button>
+        <form
+          className='max-w-[420px] rounded-[var(--radius-lg)] border border-border-hairline bg-surface-card p-4'
+          onSubmit={onSave}
+        >
+          {error ? <div className='shop-alert shop-alert-error'>{error}</div> : null}
+          <Field id='a-title' label='Etykieta adresu (np. Dom)' onChange={set('title')} value={form.title ?? ''} />
+          <Field id='a-firstName' label='Imię' onChange={set('firstName')} required value={form.firstName} />
+          <Field id='a-lastName' label='Nazwisko' onChange={set('lastName')} required value={form.lastName} />
+          <Field id='a-phone' label='Telefon' onChange={set('phone')} required value={form.phone} />
+          <Field
+            id='a-line1'
+            label='Adres (ulica i numer)'
+            onChange={set('addressLine1')}
+            required
+            value={form.addressLine1}
+          />
+          <Field
+            id='a-postal'
+            label='Kod pocztowy'
+            onChange={set('postalCode')}
+            placeholder='83-300'
+            required
+            value={form.postalCode}
+          />
+          <Field id='a-city' label='Miejscowość' onChange={set('city')} required value={form.city} />
+          <div className='flex items-center gap-2'>
+            <Button disabled={pending} type='submit' variant='cta'>
+              {pending ? 'Zapisywanie…' : 'Zapisz adres'}
+            </Button>
+            <Button className='text-brand-strong' onClick={() => setAdding(false)} type='button' variant='link'>
+              Anuluj
+            </Button>
           </div>
         </form>
       ) : (
-        <button className='btn-primary' onClick={() => setAdding(true)} type='button'>
-          + Add address
-        </button>
+        <Button onClick={() => setAdding(true)} type='button' variant='cta'>
+          + Dodaj adres
+        </Button>
       )}
     </section>
   )

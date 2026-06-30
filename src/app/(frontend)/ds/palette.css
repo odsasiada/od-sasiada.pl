@@ -1,0 +1,77 @@
+/* ── od-sąsiada.pl · Raw colour palette ─────────────────────────────────────
+   The literal, named colour scales. These are the "paint": never reference
+   them directly in product UI — use the semantic aliases in semantic.css.
+   Anchored on the brand DNA already shipped in the codebase
+   (--green #2f7a3f, --green-dark #245f31, paper #f7f6f2, border #e4e2da,
+   ink #1f2421, muted #6b716c) and extended into full 50–900 scales plus a
+   terracotta CTA accent and warm semantic ramps. */
+
+:root {
+  /* Green — leading brand colour + success. 600/700 are the originals. */
+  --green-50: #eef6f0;
+  --green-100: #d6ebdb;
+  --green-200: #aed7b8;
+  --green-300: #7dbd8d;
+  --green-400: #4f9e64;
+  --green-500: #3a8a4f;
+  --green-600: #2f7a3f; /* brand green (legacy --green) */
+  --green-700: #245f31; /* brand green dark (legacy --green-dark) */
+  --green-800: #1e4d29;
+  --green-900: #173c20;
+
+  /* Stone — warm neutral. Paper, cards, borders, ink. NOT pure grey. */
+  --stone-50: #faf9f6;
+  --stone-100: #f7f6f2; /* paper / page background (legacy --bg) */
+  --stone-200: #efede6;
+  --stone-300: #e4e2da; /* hairline border (legacy --border) */
+  --stone-400: #d3d0c5;
+  --stone-500: #b0ada1;
+  --stone-600: #898d85;
+  --stone-700: #6b716c; /* secondary text (legacy --muted) */
+  --stone-800: #4b504b;
+  --stone-900: #1f2421; /* primary ink (legacy --text) */
+
+  /* Terracotta — the CTA accent ("Kup", "Dodaj do koszyka"). Warm, earthy. */
+  --terracotta-50: #fcf1ec;
+  --terracotta-100: #f8ddd1;
+  --terracotta-200: #efb9a3;
+  --terracotta-300: #e59070;
+  --terracotta-400: #d97048;
+  --terracotta-500: #c75b39; /* accent */
+  --terracotta-600: #b04a2c;
+  --terracotta-700: #8f3a22;
+  --terracotta-800: #6f2e1c;
+  --terracotta-900: #532316;
+
+  /* Amber — soft warning ("mało sztuk", low stock). Never alarming. */
+  --amber-50: #fdf7ec;
+  --amber-100: #f9e9c6;
+  --amber-200: #f1d28a;
+  --amber-300: #e6b452;
+  --amber-400: #d49a2e;
+  --amber-500: #b9821d;
+  --amber-600: #976715;
+  --amber-700: #714d10;
+
+  /* Brick — muted error / destructive. A toned-down ceramic red, never neon. */
+  --brick-50: #fdeceb;
+  --brick-100: #f9d2cf;
+  --brick-200: #efaba5;
+  --brick-300: #e08a83;
+  --brick-400: #cc5a50;
+  --brick-500: #b23b32;
+  --brick-600: #9b1c1c; /* legacy alert-error text */
+  --brick-700: #7e2420;
+
+  /* Absolutes */
+  --white: #ffffff;
+  --black: #14110d;
+
+  /* Produce tints — soft, warm category fills for photo-less product tiles.
+     Desaturated so dark ink sits comfortably on top. @kind color */
+  --tint-honey: #f0e3c2; /* miody · @kind color */
+  --tint-leaf: #dde7d3; /* warzywa · @kind color */
+  --tint-pickle: #eedccd; /* kiszonki · @kind color */
+  --tint-bee: #ecddbf; /* od pszczół · @kind color */
+  --tint-stone: #ecebe3; /* default · @kind color */
+}

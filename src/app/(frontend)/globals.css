@@ -1,423 +1,143 @@
-:root {
-  --green: #2f7a3f;
-  --green-dark: #245f31;
-  --bg: #f7f6f2;
-  --card: #fff;
-  --border: #e4e2da;
-  --text: #1f2421;
-  --muted: #6b716c;
+@import "tailwindcss";
+
+/* Design tokens (1:1 mirror of _bmad-output/design-source/tokens) */
+@import "./ds/palette.css";
+@import "./ds/semantic.css";
+@import "./ds/typography.css";
+@import "./ds/spacing.css";
+@import "./ds/radius.css";
+@import "./ds/elevation.css";
+@import "./ds/motion.css";
+
+/* Dark mode toggles on the `.dark` class (dormant — no switcher yet). */
+@custom-variant dark (&:is(.dark *));
+
+/* Map design tokens → Tailwind/shadcn theme. Utilities (bg-primary, text-foreground,
+   rounded-lg…) and shadcn components resolve to OUR tokens via these channels. */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  /* Brand role aliases as Tailwind colours (text-brand, bg-accent-cta…) */
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-accent-cta: var(--accent-cta);
+  --color-accent-cta-strong: var(--accent-cta-strong);
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-text-price: var(--text-price);
+  --color-border-hairline: var(--border-hairline);
+  --color-border-strong: var(--border-strong);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    line-height: var(--leading-normal);
+    color: hsl(var(--foreground));
+    background: hsl(var(--background));
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: var(--tracking-tight);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
-}
+/* Repeated shop layout primitives — thin @apply wrappers over the token utilities. */
+@layer components {
+  .shop-main {
+    @apply mx-auto max-w-[var(--container-max)] p-6;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  .shop-back {
+    @apply mb-4 inline-block font-semibold text-brand-strong hover:underline;
+  }
 
-.shop-header {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
-  color: #fff;
-  background: var(--green);
-}
+  .shop-h1 {
+    @apply mb-3 font-display text-[length:var(--text-xl)] font-extrabold tracking-tight text-text-body;
+  }
 
-.shop-brand {
-  font-size: 20px;
-  font-weight: 700;
-}
+  .shop-h2 {
+    @apply mb-2 font-display text-[length:var(--text-lg)] font-bold tracking-tight text-text-body;
+  }
 
-.shop-cart-link {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  font-weight: 600;
-}
+  .shop-card {
+    @apply rounded-[var(--radius-xl)] border border-border-hairline bg-surface-card p-5;
+  }
 
-.shop-cart-badge {
-  padding: 2px 10px;
-  font-size: 13px;
-  color: var(--green-dark);
-  background: #fff;
-  border-radius: 999px;
-}
+  .shop-meta {
+    @apply text-sm text-text-muted;
+  }
 
-.container {
-  max-width: 1000px;
-  padding: 24px;
-  margin: 0 auto;
-}
+  .shop-alert {
+    @apply my-3 rounded-md px-4 py-3 text-sm;
+  }
 
-.tenant-intro {
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
+  .shop-alert-error {
+    @apply bg-[var(--state-error-bg)] text-[color:var(--state-error)];
+  }
 
-.tenant-intro h1 {
-  margin: 0 0 8px;
-  font-size: 24px;
-}
+  .shop-alert-ok {
+    @apply bg-[var(--state-success-bg)] text-[color:var(--brand-strong)];
+  }
 
-.tenant-meta {
-  font-size: 14px;
-  color: var(--muted);
-}
-
-.price-notice {
-  margin-top: 8px;
-  font-size: 13px;
-  font-style: italic;
-  color: var(--muted);
-}
-
-.category-filter {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.category-filter a {
-  padding: 6px 12px;
-  font-size: 14px;
-  color: var(--text);
-  text-decoration: none;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-}
-
-.category-filter a.is-active {
-  color: var(--card);
-  background: var(--green);
-  border-color: var(--green);
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.product-card {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.product-image,
-.product-image-placeholder {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-/* Q4: CSS-only placeholder (no asset in public/). Subtle diagonal hatch on muted bg. */
-.product-image-placeholder {
-  background-color: var(--border);
-  background-image: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 8px,
-    rgba(0, 0, 0, 0.04) 8px,
-    rgba(0, 0, 0, 0.04) 16px
-  );
-}
-
-.product-title {
-  margin: 0;
-  font-size: 16px;
-}
-
-.product-desc {
-  margin: 0;
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.product-price {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.variant-select {
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.btn-add,
-.btn-primary {
-  padding: 10px 12px;
-  margin-top: auto;
-  font-weight: 600;
-  color: #fff;
-  cursor: pointer;
-  background: var(--green);
-  border: none;
-  border-radius: 8px;
-}
-
-.btn-add:disabled {
-  color: var(--muted);
-  cursor: not-allowed;
-  background: var(--border);
-}
-
-.btn-add:hover:not(:disabled),
-.btn-primary:hover {
-  background: var(--green-dark);
-}
-
-.empty {
-  color: var(--muted);
-}
-
-/* Cart */
-.cart-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.cart-name {
-  font-weight: 600;
-}
-
-.cart-variant {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.qty {
-  display: inline-flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.qty button {
-  width: 28px;
-  height: 28px;
-  font-size: 16px;
-  cursor: pointer;
-  background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-.cart-summary {
-  display: flex;
-  justify-content: space-between;
-  margin: 16px 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 12px;
-}
-
-.field label {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.field input {
-  padding: 10px;
-  font-size: 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.alert {
-  padding: 12px 16px;
-  margin: 12px 0;
-  border-radius: 8px;
-}
-
-.alert-error {
-  color: #9b1c1c;
-  background: #fde8e8;
-}
-
-.alert-ok {
-  color: var(--green-dark);
-  background: #e6f4ea;
-}
-
-.link-back {
-  display: inline-block;
-  margin-bottom: 16px;
-  font-weight: 600;
-  color: var(--green-dark);
-}
-
-/* Navigation / account */
-.shop-nav {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.shop-nav-link {
-  font-weight: 600;
-}
-
-.account-box {
-  max-width: 420px;
-  padding: 20px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.tab {
-  flex: 1;
-  padding: 8px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.tab.active {
-  color: #fff;
-  background: var(--green);
-  border-color: var(--green);
-}
-
-.link-button {
-  padding: 0;
-  font-weight: 600;
-  color: var(--green-dark);
-  cursor: pointer;
-  background: none;
-  border: none;
-}
-
-/* My Orders */
-.order-card {
-  padding: 16px;
-  margin-bottom: 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.order-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 18px;
-}
-
-.status-badge {
-  padding: 2px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green-dark);
-  background: #e6f4ea;
-  border-radius: 999px;
-}
-
-.order-items {
-  padding-left: 0;
-  margin: 12px 0;
-  color: var(--text);
-  list-style: none;
-}
-
-.order-item {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  padding: 6px 0;
-}
-
-.order-item-thumb {
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  object-fit: cover;
-  border-radius: 8px;
-}
-
-.order-total {
-  font-weight: 700;
-}
-
-.reorder {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-top: 12px;
-}
-
-.reorder-error {
-  font-size: 13px;
-  color: #9b1c1c;
-}
-
-/* Address Book */
-.address-book {
-  margin-top: 24px;
-}
-
-.address-card {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 12px 16px;
-  margin-bottom: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-}
-
-.address-form {
-  max-width: 420px;
-  padding: 16px;
-  margin-top: 12px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 12px;
+  /* CSS-only photo placeholder — subtle diagonal hatch on the hairline tint. */
+  .shop-img-placeholder {
+    background-image: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 8px,
+      rgb(0 0 0 / 4%) 8px,
+      rgb(0 0 0 / 4%) 16px
+    );
+    @apply bg-border-hairline;
+  }
 }

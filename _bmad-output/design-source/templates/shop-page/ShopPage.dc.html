@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Strona sklepu sąsiada" description="Katalog mini-sklepu sprzedawcy: zielony header, intro z minimalnym zamówieniem i siatka kart produktów z akcentem per-tenant." -->
+<helmet>
+  <script src="./ds-base.js"></script>
+  <style>
+    body { margin: 0; background: var(--surface-page); font-family: var(--font-body); color: var(--text-body); }
+  </style>
+</helmet>
+
+<div data-tenant ref="{{ rootRef }}" style="min-height: 100vh;">
+
+  <x-import component-from-global-scope="OdSSiadaDesignSystem_16cae9.ShopHeader"
+    tenant-name="{{ tenantName }}" customer-name="{{ customerName }}"
+    cart-count="{{ cartCount }}" cart-total="{{ cartTotal }}"
+    hint-size="100%,64px"></x-import>
+
+  <main style="max-width: 1000px; margin: 0 auto; padding: 24px;">
+    <section style="background: var(--surface-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 22px; box-shadow: var(--shadow-sm);">
+      <h1 style="margin: 0 0 8px; font-size: var(--text-xl);">{{ tenantName }}</h1>
+      <p style="margin: 0; font-size: var(--text-sm); color: var(--text-muted);">
+        Minimalne zamówienie: <strong style="color: var(--text-body);">{{ minOrder }}</strong> · Dostawa w piątki · Płatność gotówką przy odbiorze
+      </p>
+    </section>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px;">
+      <sc-for list="{{ products }}" as="p" hint-placeholder-count="6">
+        <x-import component-from-global-scope="OdSSiadaDesignSystem_16cae9.ProductCard"
+          title="{{ p.title }}" category="{{ p.cat }}" tone="{{ p.tone }}"
+          price="{{ p.price }}" unit="{{ p.unit }}" seasonal="{{ p.seasonal }}"
+          low-stock="{{ p.lowStock }}" seller="{{ tenantName }}"
+          hint-size="232px,400px"></x-import>
+      </sc-for>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;tenantName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Świeże z Kaszub&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;customerName&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Krystyna&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;minOrder&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;30,00 zł&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;cartCount&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:3,&quot;tsType&quot;:&quot;number&quot;},&quot;cartTotal&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:8600,&quot;tsType&quot;:&quot;number&quot;},&quot;tenantAccent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#c75b39&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;tenantAccentStrong&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#b04a2c&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props
+    const accent = p.tenantAccent ?? '#c75b39'
+    const accentStrong = p.tenantAccentStrong ?? '#b04a2c'
+    return {
+      rootRef: (el) => {
+        if (!el) return
+        el.style.setProperty('--tenant-accent', accent)
+        el.style.setProperty('--tenant-accent-strong', accentStrong)
+      },
+      tenantName: p.tenantName ?? 'Świeże z Kaszub',
+      customerName: p.customerName ?? 'Krystyna',
+      cartCount: p.cartCount ?? 3,
+      cartTotal: p.cartTotal ?? 8600,
+      minOrder: p.minOrder ?? '30,00 zł',
+      tenantAccent: p.tenantAccent ?? '#c75b39',
+      tenantAccentStrong: p.tenantAccentStrong ?? '#b04a2c',
+      products: p.products ?? [
+        { title: 'Miód rzepakowy', cat: 'Miody', tone: 'honey', price: 4000, unit: '1 L', seasonal: false, lowStock: null },
+        { title: 'Miód gryczany', cat: 'Miody', tone: 'honey', price: 4400, unit: '1 L', seasonal: false, lowStock: null },
+        { title: 'Jaja wiejskie', cat: 'Warzywa', tone: 'leaf', price: 130, unit: 'szt.', seasonal: false, lowStock: 6 },
+        { title: 'Gruszki konferencje', cat: 'Warzywa', tone: 'leaf', price: 750, unit: 'kg', seasonal: false, lowStock: null },
+        { title: 'Kapusta kiszona', cat: 'Kiszonki', tone: 'pickle', price: 850, unit: 'kg', seasonal: false, lowStock: 3 },
+        { title: 'Pomidory malinowe', cat: 'Warzywa', tone: 'leaf', price: null, unit: null, seasonal: true, lowStock: null },
+      ],
+    }
+  }
+}
+</script>
+</body>
+</html>

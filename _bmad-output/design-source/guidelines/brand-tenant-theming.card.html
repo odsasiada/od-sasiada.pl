@@ -1,0 +1,50 @@
+<!-- @dsCard group="Brand" viewport="700x250" name="Per-tenant theming" subtitle="One global identity + a light per-seller accent. Skeleton never changes." -->
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  body { margin: 0; padding: 20px; background: var(--surface-page); font-family: var(--font-body); display: flex; gap: 16px; flex-wrap: wrap; }
+  .shop { flex: 1; min-width: 200px; background: var(--surface-card); border: 1px solid var(--border-hairline); border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); }
+  .bar { padding: 10px 14px; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 15px; background: var(--brand); }
+  .body { padding: 14px; }
+  .name { font-weight: 700; font-size: 14px; margin: 0 0 2px; }
+  .price { font-weight: 700; font-size: 18px; font-feature-settings: var(--price-feature); margin: 0 0 10px; }
+  .cta { width: 100%; border: 0; padding: 9px; border-radius: var(--radius-md); color: #fff; font-weight: 700; font-size: 13px; cursor: pointer;
+         background: var(--accent-cta); }
+  .tag { font-family: var(--font-mono); font-size: 10px; color: var(--text-faint); margin: 8px 14px 0; }
+</style>
+</head>
+<body>
+  <div class="shop">
+    <div class="bar">Świeże z Kaszub</div>
+    <div class="body">
+      <p class="name">Miód rzepakowy 1 L</p>
+      <p class="price">40,00 zł</p>
+      <button class="cta">Dodaj do koszyka</button>
+    </div>
+    <div class="tag">default · accent = terracotta</div>
+  </div>
+
+  <div class="shop" data-tenant style="--tenant-accent:#7a5cc4;--tenant-accent-strong:#634aa6">
+    <div class="bar">Ogród Pani Krysi</div>
+    <div class="body">
+      <p class="name">Pomidory malinowe</p>
+      <p class="price">9,00 zł</p>
+      <button class="cta">Dodaj do koszyka</button>
+    </div>
+    <div class="tag">[data-tenant] · accent = #7a5cc4</div>
+  </div>
+
+  <div class="shop" data-tenant style="--tenant-accent:#c79a1e;--tenant-accent-strong:#a07c14">
+    <div class="bar">Pasieka Zielińskich</div>
+    <div class="body">
+      <p class="name">Miód gryczany 1 L</p>
+      <p class="price">44,00 zł</p>
+      <button class="cta">Dodaj do koszyka</button>
+    </div>
+    <div class="tag">[data-tenant] · accent = #c79a1e</div>
+  </div>
+</body>
+</html>

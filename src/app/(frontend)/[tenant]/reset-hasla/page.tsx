@@ -20,11 +20,11 @@ export default async function ResetPasswordPage({
   }
 
   return (
-    <main className='container'>
-      <Link className='link-back' href={`/${slug}`}>
-        ← Back to catalog
+    <main className='shop-main'>
+      <Link className='shop-back' href={`/${slug}`}>
+        ← Wróć do sklepu
       </Link>
-      <h1>Reset password</h1>
+      <h1 className='shop-h1'>Reset hasła</h1>
       <ResetPasswordForm slug={tenant.slug} token={token ?? ''} />
     </main>
   )

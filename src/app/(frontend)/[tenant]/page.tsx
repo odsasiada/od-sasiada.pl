@@ -24,19 +24,21 @@ export default async function CatalogPage({
   const [categories, products] = await Promise.all([getCategories(tenant.id), getCatalog(tenant.id, kategoria)])
 
   return (
-    <main className='container'>
-      <section className='tenant-intro'>
-        <h1>{tenant.name}</h1>
-        <p className='tenant-meta'>
-          Minimum order: {formatPLN(tenant.minOrderValue)} · Delivery on Fridays
+    <main className='shop-main'>
+      <section className='mb-6 rounded-[var(--radius-xl)] border border-border-hairline bg-surface-card p-5'>
+        <h1 className='mb-2 font-display text-[length:var(--text-xl)] font-extrabold tracking-tight text-text-body'>
+          {tenant.name}
+        </h1>
+        <p className='text-sm text-text-muted'>
+          Minimalne zamówienie: {formatPLN(tenant.minOrderValue)} · Dostawa w piątki · Płatność gotówką przy odbiorze
           {tenant.contactPhone ? ` · tel. ${tenant.contactPhone}` : ''}
         </p>
-        {tenant.priceNotice && <p className='price-notice'>{tenant.priceNotice}</p>}
+        {tenant.priceNotice ? <p className='mt-2 text-xs text-text-faint italic'>{tenant.priceNotice}</p> : null}
       </section>
 
       <CategoryFilter activeSlug={kategoria} categories={categories} tenantSlug={slug} />
 
-      <Catalog products={products} />
+      <Catalog products={products} seller={tenant.name} />
     </main>
   )
 }

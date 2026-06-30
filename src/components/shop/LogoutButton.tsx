@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 
 import { logoutCustomer } from '@/app/(frontend)/[tenant]/account-actions'
+import { Button } from '@/components/ui/button'
 
 export const LogoutButton = ({ slug }: { slug: string }) => {
   const router = useRouter()
@@ -17,8 +18,8 @@ export const LogoutButton = ({ slug }: { slug: string }) => {
     })
 
   return (
-    <button className='link-button' disabled={pending} onClick={onClick} type='button'>
+    <Button className='px-0 text-brand-strong' disabled={pending} onClick={onClick} type='button' variant='link'>
       {pending ? 'Wylogowywanie…' : 'Wyloguj'}
-    </button>
+    </Button>
   )
 }

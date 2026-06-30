@@ -28,8 +28,11 @@ export default async function TenantLayout({
 
   return (
     <CartProvider initial={cart} isLoggedIn={Boolean(customer)} slug={tenant.slug} tenantId={tenant.id}>
-      <Header customerName={customerName} slug={tenant.slug} tenantName={tenant.name} />
-      {children}
+      {/* data-tenant scopes the per-seller accent (default terracotta until Tenants gets a colour field). */}
+      <div data-tenant>
+        <Header customerName={customerName} slug={tenant.slug} tenantName={tenant.name} />
+        {children}
+      </div>
     </CartProvider>
   )
 }

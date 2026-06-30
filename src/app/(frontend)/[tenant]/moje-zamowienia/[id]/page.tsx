@@ -1,9 +1,11 @@
+import type { OrderStatusValue } from '@/ecommerce/order-status'
+
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 
-import { ORDER_STATUS_LABELS } from '@/ecommerce/order-status'
+import { StatusBadge } from '@/components/shop/ui/Badge'
 import { getCurrentCustomer } from '@/lib/auth'
 import { formatPLN, getTenantBySlug, resolveOrderItemImages } from '@/lib/shop'
 import config from '@/payload.config'
@@ -50,15 +52,15 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
 
   if (!customer) {
     return (
-      <main className='container'>
-        <Link className='link-back' href={`/${slug}`}>
-          ← Back to catalog
+      <main className='shop-main'>
+        <Link className='shop-back' href={`/${slug}`}>
+          ← Wróć do sklepu
         </Link>
-        <h1>My orders</h1>
-        <p className='empty'>
-          To see your orders,{' '}
-          <Link className='link-back' href={`/${slug}/konto`}>
-            log in
+        <h1 className='shop-h1'>Moje zamówienia</h1>
+        <p className='text-text-muted'>
+          Aby zobaczyć swoje zamówienia,{' '}
+          <Link className='font-semibold text-brand-strong hover:underline' href={`/${slug}/konto`}>
+            zaloguj się
           </Link>
           .
         </p>
@@ -101,37 +103,35 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
   const itemImages = await resolveOrderItemImages(tenant.id, items)
 
   return (
-    <main className='container'>
-      <Link className='link-back' href={`/${slug}/moje-zamowienia`}>
-        ← Back to my orders
+    <main className='shop-main'>
+      <Link className='shop-back' href={`/${slug}/moje-zamowienia`}>
+        ← Wróć do moich zamówień
       </Link>
-      <h1>Order details</h1>
+      <h1 className='shop-h1'>Szczegóły zamówienia</h1>
 
-      <div className='order-card'>
-        <div className='order-head'>
+      <div className='shop-card'>
+        <div className='flex items-center justify-between text-[length:var(--text-md)]'>
           <strong>{o.orderNumber ?? `#${order.id}`}</strong>
-          <span className='status-badge'>
-            {ORDER_STATUS_LABELS[o.status as keyof typeof ORDER_STATUS_LABELS] ?? o.status}
-          </span>
+          <StatusBadge status={o.status as OrderStatusValue} />
         </div>
-        <div className='tenant-meta'>{formatDate(order.createdAt)}</div>
+        <div className='shop-meta'>{formatDate(order.createdAt)}</div>
 
-        <ul className='order-items'>
+        <ul className='my-3 list-none p-0 text-text-body'>
           {items.map((it, idx) => {
             const image = itemImages.get(idx) ?? null
             return (
-              <li className='order-item' key={idx}>
+              <li className='flex items-center gap-2.5 py-1.5' key={idx}>
                 {image ? (
                   <Image
                     alt={image.alt}
-                    className='order-item-thumb'
+                    className='size-14 flex-shrink-0 rounded-md object-cover'
                     height={THUMB_SIZE}
                     sizes={`${THUMB_SIZE}px`}
                     src={image.url}
                     width={THUMB_SIZE}
                   />
                 ) : (
-                  <div aria-hidden='true' className='order-item-thumb product-image-placeholder' />
+                  <div aria-hidden='true' className='shop-img-placeholder size-14 flex-shrink-0 rounded-md' />
                 )}
                 <span>
                   {it.quantity} × {it.productNameSnapshot}
@@ -146,7 +146,7 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
         </ul>
 
         {slot?.date ? (
-          <div className='tenant-meta'>
+          <div className='shop-meta'>
             <strong>Termin dostawy</strong>
             <br />
             {slot.label ?? `${slot.date}${slot.windowStart ? `, ${slot.windowStart}–${slot.windowEnd ?? ''}` : ''}`}
@@ -154,8 +154,8 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
         ) : null}
 
         {address ? (
-          <div className='tenant-meta'>
-            <strong>Delivery address</strong>
+          <div className='shop-meta mt-2'>
+            <strong>Adres dostawy</strong>
             <br />
             {address.firstName} {address.lastName}
             <br />
@@ -171,7 +171,7 @@ export default async function MyOrderDetailPage({ params }: { params: Promise<{ 
           </div>
         ) : null}
 
-        <div className='order-total'>Total: {formatPLN(o.amount ?? 0)}</div>
+        <div className='mt-3 font-bold'>Razem: {formatPLN(o.amount ?? 0)}</div>
       </div>
     </main>
   )

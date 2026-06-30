@@ -150,6 +150,20 @@ _This file contains critical rules and patterns that AI agents must follow when 
 **Dokumenty:** treść artefaktów i komentarze po **polsku** (i18n `pl`, fallback `pl`),
 kod/identyfikatory po angielsku.
 
+### UI / Design System
+
+- **Design system** („Od Sąsiada", Claude Design) — dokumentacja UX w
+  [`_bmad-output/ux/`](./ux/index.md): tokeny, komponenty, wzorce, voice & tone, a11y.
+- **Źródło prawdy** = lustro 1:1 [`_bmad-output/design-source/`](./design-source/MIRROR.md)
+  (read-only; edytuj upstream + re-sync). NIE importować z lustra w kodzie aplikacji.
+- **Stan w repo:** tokeny jeszcze NIE wdrożone do `src/` — `globals.css` ma legacy CSS vars
+  (`--green/--bg/--card/--border/--text/--muted`). Migracja = osobne zadanie (plan `glistening-singing-dove.md`).
+- **Tokeny:** paleta surowa (skale 50–900) → role semantyczne (shadcn HSL channels + aliasy marki);
+  pieniądze formatuj przez `formatPLN` (rola `--text-price-*`, tabular lining). Szczegóły: [`ux/design-tokens.md`](./ux/design-tokens.md).
+- **Per-tenant:** sprzedawca nadpisuje TYLKO akcent (`[data-tenant]` → `--accent-cta`); szkielet niezmienny.
+  Akcent musi przejść walidację kontrastu. Szczegóły: [`ux/tenant-theming.md`](./ux/tenant-theming.md).
+- **Fonty (docelowo):** `next/font/google` — Bricolage Grotesque (display) + Hanken Grotesk (body), subsets `latin` + `latin-ext`.
+
 ### Development Workflow Rules
 
 - **Lokalny Postgres przez Docker** (`od-sasiada-pg`, `postgres:17`, port 5432, baza
@@ -215,4 +229,4 @@ LCP listy produktów (NFR8).
 - Aktualizuj przy zmianie stacku/wzorców.
 - Przeglądaj okresowo; usuwaj reguły, które stały się oczywiste.
 
-Last Updated: 2026-06-21
+Last Updated: 2026-06-30

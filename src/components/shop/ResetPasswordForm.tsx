@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 
 import { resetPassword } from '@/app/(frontend)/[tenant]/account-actions'
+import { Field } from '@/components/shop/ui/Field'
+import { Button } from '@/components/ui/button'
 
 export const ResetPasswordForm = ({ slug, token }: { slug: string; token: string }) => {
   const router = useRouter()
@@ -14,7 +16,7 @@ export const ResetPasswordForm = ({ slug, token }: { slug: string; token: string
   const [busy, setBusy] = useState(false)
 
   if (!token) {
-    return <div className='alert alert-error'>No reset token in the link.</div>
+    return <div className='shop-alert shop-alert-error'>Brak tokenu resetu w linku.</div>
   }
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -35,29 +37,30 @@ export const ResetPasswordForm = ({ slug, token }: { slug: string; token: string
   }
 
   if (done) {
-    return <div className='alert alert-ok'>Password changed. Logging you in…</div>
+    return <div className='shop-alert shop-alert-ok'>Hasło zmienione. Logujemy Cię…</div>
   }
 
   return (
-    <form className='account-box' onSubmit={onSubmit}>
-      <h2>Set new password</h2>
-      {error && <div className='alert alert-error'>{error}</div>}
-      <div className='field'>
-        <label htmlFor='new-password'>New password</label>
-        <input
-          id='new-password'
-          minLength={8}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          type='password'
-          value={password}
-        />
-      </div>
-      <button className='btn-primary' disabled={busy} type='submit'>
-        {busy ? 'Saving…' : 'Change password'}
-      </button>
-      <Link className='link-button' href={`/${slug}/konto`} style={{ display: 'inline-block', marginTop: 12 }}>
-        ← Back to log in
+    <form
+      className='max-w-[420px] rounded-[var(--radius-lg)] border border-border-hairline bg-surface-card p-5'
+      onSubmit={onSubmit}
+    >
+      <h2 className='shop-h2'>Ustaw nowe hasło</h2>
+      {error ? <div className='shop-alert shop-alert-error'>{error}</div> : null}
+      <Field
+        id='new-password'
+        label='Nowe hasło'
+        minLength={8}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+        type='password'
+        value={password}
+      />
+      <Button disabled={busy} type='submit' variant='cta'>
+        {busy ? 'Zapisywanie…' : 'Zmień hasło'}
+      </Button>
+      <Link className='mt-3 inline-block font-semibold text-brand-strong hover:underline' href={`/${slug}/konto`}>
+        ← Wróć do logowania
       </Link>
     </form>
   )
