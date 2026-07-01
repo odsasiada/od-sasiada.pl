@@ -37,7 +37,7 @@
 # - Stories are ordered by build order from epics.md
 
 generated: 2026-06-20
-last_updated: 2026-06-30 # S4.4 dodane — naprawa deploya prod (sharp/libvips)
+last_updated: 2026-07-01 # S6.1 + S6.2 gotowe (ready-for-dev); epic-6 → in-progress
 project: od-sasiada.pl
 project_key: NOKEY
 tracking_system: file-system
@@ -82,10 +82,21 @@ development_status:
   S3.6: done # filtr katalogu po kategorii (server-side, tenant-scoped) — review done (1 patch fixed)
   epic-3-retrospective: optional
 
-  # EPIC-4 — Seed fixtures i dane produkcyjne (build order: S4.1 → S4.2 → S4.3)
+  # EPIC-4 — Seed fixtures i dane produkcyjne (build order: S4.1 → S4.2 → S4.3 → S4.4 → S4.5 → S4.6 → S4.7)
   epic-4: in-progress
   S4.1: done # Uruchomienie seed.ts lokalnie — weryfikacja danych tenant + produkty
   S4.2: done # Przygotowanie seed produkcji (Supabase) — seed-production.ts + seed:production script
-  S4.3: in-progress # Prod zaseedowany (35 tabel, tenant + 26 produktów); /admin /swieze-z-kaszub /api/tenants = 200. Pozostaje ręczne QA checkoutu (Task 3, AC4-5)
-  S4.4: review # Naprawa deploya prod — crash sharp/libvips (ERR_DLOPEN_FAILED) naprawiony + build zielony; /admin 200
+  S4.3: done # Prod zaseedowany (35 tabel, tenant + 26 produktów); /admin /swieze-z-kaszub /api/tenants = 200. Pozostaje ręczne QA checkoutu (Task 3, AC4-5)
+  S4.4: done # Naprawa deploya prod — crash sharp/libvips (ERR_DLOPEN_FAILED) naprawiony + build zielony; /admin 200
+  S4.5: done # Kategorie tenanta demo (7: +Jaja) + przypisanie 26/26 produktów; filtr katalogu działa na żywo na prod
+  S4.6: done # Zdjęcia hero (26 stockowych) na prod; naprawiono serwowanie mediów (public read, SERVER_URL, addRandomSuffix:false, remotePatterns) — 22 produkty ze zdjęciami na żywo
+  S4.7: done # Okno dostawy (piątek 09:00-18:00, cap 30) zaseedowane na prod; render w checkoucie = ręczne QA
   epic-4-retrospective: optional
+
+  # EPIC-5 — Self-service trial dla podmiotów rolnych (PLACEHOLDER — do rozpisania)
+  epic-5: backlog # Samodzielna rejestracja/onboarding nowego dostawcy do testu (provisioning tenanta, izolacja). Duży temat — rozpisać osobno.
+
+  # EPIC-6 — Koszyk gościa → scalenie z kontem (build order: S6.1 → S6.2)
+  epic-6: in-progress # Gość buduje koszyk (localStorage) bez logowania → po rejestracji/logowaniu unia z serwerowym koszykiem. Domyka lukę B4 (dziś add→redirect→pusty koszyk).
+  S6.1: ready-for-dev # Koszyk gościa w localStorage (per tenant); redirect do /konto dopiero przy checkout
+  S6.2: ready-for-dev # Scalanie koszyka gościa z kontem przy register/login (unia, sumowanie ilości, re-wycena serwerowa) — ZALEŻY od S6.1 (guest-cart.ts)

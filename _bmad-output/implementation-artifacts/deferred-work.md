@@ -22,3 +22,12 @@
 - [S3.3] Upload <768px: brak wariantu `card` → oryginał serwowany jako card (NFR8 minor) [src/lib/shop.ts toProductImage]
 - [S3.3] `resolveOrderItemImages` `limit: size` bez chunkowania — zamówienie >~100 różnych produktów może uciąć miniatury [src/lib/shop.ts]
 - [S3.4] `slugify` nazw wyłącznie nie-łacińskich → pusty slug → throw z mylącym komunikatem; auto-slug blokuje takie nazwy (manualny slug wymagany) [src/collections/Categories.ts]
+
+## Deferred from: code review of S4.3–S4.7 (2026-07-01)
+
+- [S4.6] `addRandomSuffix:false` → kolizje nazw plików cross-tenant (dwa tenanty `miod.jpg` → nadpisanie bloba); per-tenant `prefix` = przyszła praca, single-tenant demo [src/payload.config.ts:127]
+- [S4.6] Skrypt `delete-tenant-media.mjs` kasuje CAŁE media tenanta (nie tylko hero), pomija hooki adaptera (osierocone bloby), finalny `delete` poza try (FK z innych tabel → nieobsłużony wyjątek w połowie) — świadomy one-off [_bmad-output/scripts/delete-tenant-media.mjs:50]
+- [S4.6] Lookup produktów pod hero `limit: 200` cicho pomija >200 produktów; `pagination:false` gdy katalog urośnie [src/seed-production.ts:266]
+- [S4.6] Dryf AC: AC3 mówi o URL blob `*.public.blob.vercel-storage.com`, a serwowanie idzie app-domain `/api/media/file/...` (intencja „bez 404" spełniona) — aktualizacja treści historii [S4.6.md]
+- [S4.5] Seed create-only (nie upsert): zmiana `priceInPLN`/`description` nie zadziała przy ponownym uruchomieniu (dryf ceny); tylko kategorie zawsze aktualizowane [src/seed-production.ts:24-37]
+- [S4.5] Dryf AC: AC4 mówi „6 pozycji", zaseedowano 7 kategorii (dodano „Jaja") — aktualizacja AC [S4.5.md]
