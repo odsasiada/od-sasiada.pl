@@ -1,26 +1,29 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdmin } from '@/access'
+import { isAdmin, mediaRead } from '@/access'
 
 /**
  * EPIC-3 (SPIKE-S3 / S3.1): per-tenant media library (Upload collection).
  *
  * Tenant isolation: `media` is wired into `multiTenantPlugin.collections` in
  * payload.config.ts, which stamps a `tenant` field and scopes panel rows to the
- * admin's tenant (platform-admin sees all). Access below is panel-only (collection
- * `users`); the public storefront reads images via `overrideAccess: true` + a manual
- * `where { tenant }` (architektura §3, S3.3) — so `read` is intentionally NOT public,
- * avoiding cross-tenant leakage (R-S3.2).
+ * admin's tenant (platform-admin sees all). create/update/delete stay admin-only.
+ *
+ * S4.6: `read` uses `mediaRead` — PUBLIC for static file serving only. The storefront serves
+ * product images through Payload's `/api/media/file/<filename>` route (Vercel Blob behind it),
+ * which enforces this collection's `read` access with `isReadingStaticFile` set, so anonymous
+ * shop visitors can fetch files. The metadata list/find endpoint (`GET /api/media`) stays
+ * admin-only, so anonymous callers cannot enumerate cross-tenant media (R-S3.2 / NFR1). Admin
+ * panel rows remain tenant-scoped via the multi-tenant plugin.
  *
  * Storage: defaults to local disk in dev. Vercel Blob adapter (D1) is configured
- * separately on this collection in payload.config.ts once @payloadcms/storage-vercel-blob
- * is installable and BLOB_READ_WRITE_TOKEN is provisioned — see SPIKE-S3 decision note.
+ * separately on this collection in payload.config.ts (BLOB_READ_WRITE_TOKEN).
  */
 export const Media: CollectionConfig = {
   access: {
     create: isAdmin,
     delete: isAdmin,
-    read: isAdmin,
+    read: mediaRead,
     update: isAdmin,
   },
 

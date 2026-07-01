@@ -218,11 +218,16 @@ export default buildConfig({
     ...(env.BLOB_READ_WRITE_TOKEN
       ? [
           vercelBlobStorage({
-            // R-S3.2 (AC4): public blob → isolation rests on UNGUESSABLE urls + no listing.
-            // The adapter defaults this to false, which yields predictable `<store>/<filename>`
-            // urls (cross-tenant guess + filename collisions). True appends a random suffix so a
-            // tenant cannot guess another tenant's image url, and same-named files never collide.
-            addRandomSuffix: true,
+            // S4.6: addRandomSuffix MUST be false here. With `true`, the adapter appends a random
+            // suffix to the uploaded blob keys — including the resized `imageSizes` variants —
+            // but does NOT record that suffix in the `sizes_*_filename` fields. The catalog serves
+            // the `card` (768) variant, so `/api/media/file/<name>-768x768.jpg` (no suffix) 404s
+            // against the suffixed blob. False keeps blob keys == filenames → variants resolve.
+            // Trade-off: predictable `<store>/<filename>` urls. Acceptable for a PUBLIC catalog;
+            // future multi-tenant filename collisions to be handled via a per-tenant `prefix`.
+            addRandomSuffix: false,
+            // Serve via Payload's `/api/media/file/...` route; anonymous access works through
+            // Media.read = public (see Media.ts) + a correct SERVER_URL on Vercel (not localhost).
             collections: { media: true },
             token: env.BLOB_READ_WRITE_TOKEN,
           }),

@@ -88,3 +88,75 @@
 ## Dalszy backlog
 
 *Jeszcze nie w rozmiarze epiku: korekta wagi przy dostawie (faza 2), e-mail klienta per-tenant, łączenie gość→konto, SMS, galeria zdjęć, hierarchia kategorii. Odłożone poza MVP: fakturowanie operatora (3+ tenantów), pełne RODO.*
+
+## EPIC-4 — Seed fixtures i dane produkcyjne
+
+**Cel (= Cel Sprintu 4):** uruchomić seed.ts z pierwszym tenantem `swieze-z-kaszub` lokalnie, a następnie przenieść te dane do produkcyjnej bazy Supabase, aby aplikacja była gotowa na pilota z pierwszym dostawcą.
+
+**Status:** 🔄 w trakcie — S4.1 gotowy do realizacji.
+
+**Kolejność budowania:** `S4.1 → S4.2 → S4.3 → S4.4 → S4.5 → S4.6 → S4.7`
+
+### Historyjki
+
+| ID | Twierdzenie historyjki | Est. | Status | Zależy od |
+|----|------------------------|------|--------|-----------|
+| **S4.1** | Jako operator chcę uruchomić `pnpm seed` lokalnie, aby zweryfikować dane tenant `swieze-z-kaszub` i produkty (warzywa, miody, produkty pszczele, sezonowe, warianty). | S | 🔄 GOTOWE do realizacji | — (pierwsza) |
+| **S4.2** | Jako operator chcę przygotować seed produkcji (Supabase), aby dodać dane fixtures do produkcyjnej bazy. | M | ☐ TODO | S4.1 |
+| **S4.3** | Jako operator chcę zweryfikować dane na produkcji (test end-to-end), aby potwierdzić gotowość aplikacji na pilota z pierwszym dostawcą. | S | ☐ TODO | S4.2 |
+| **S4.4** | Jako operator chcę żeby aplikacja uruchamiała się na produkcji bez błędu 500 (naprawa crashu `sharp`/libvips `ERR_DLOPEN_FAILED` + typecheck builda), aby móc dokończyć weryfikację end-to-end. | S | 🔄 w trakcie | S4.3 |
+| **S4.5** | Jako operator demo chcę żeby tenant `swieze-z-kaszub` miał kategorie i przypisane produkty, aby renderował się pasek filtra katalogu i działało filtrowanie. | S | 🔎 review (7 kat. +Jaja, 26/26 przypiętych, filtr działa na prod) | S4.4 |
+| **S4.6** | Jako operator demo chcę zdjęcia (hero) kluczowych produktów, aby katalog wyglądał atrakcyjnie podczas demo. | S | 🔎 review (26 zdjęć stockowych + naprawa serwowania mediów; 22 produkty ze zdjęciami na prod) | S4.5 |
+| **S4.7** | Jako operator demo chcę skonfigurowane okna dostawy (piątki), aby w checkoucie dało się wybrać termin. | S | 🔎 review (slot piątkowy na prod; render = ręczne QA) | S4.6 |
+
+> **Tenant demo:** `swieze-z-kaszub` pełni rolę tenanta demonstracyjnego — używany podczas demo
+> z potencjalnymi klientami. S4.5–S4.7 doszlifowują jego prezentację (kategorie, zdjęcia, dostawy).
+
+---
+
+## EPIC-5 — Self-service trial dla podmiotów rolnych (PLACEHOLDER)
+
+**Status:** 📋 backlog — do rozpisania.
+
+**Cel:** umożliwić potencjalnym podmiotom rolnym samodzielne przetestowanie platformy —
+rejestracja/onboarding nowego dostawcy (tenanta) bez ręcznego provisioningu przez operatora.
+
+**Otwarte tematy do rozpisania:** rejestracja tenanta i jego pierwszego użytkownika-admina,
+provisioning danych startowych (kategorie/sloty), izolacja i limity trialu, ścieżka „demo →
+płatna współpraca". Duży zakres — wymaga osobnej sesji planowania (PRD/architektura), nie jest
+seed-story epic-4.
+
+---
+
+## EPIC-6 — Koszyk gościa → scalenie z kontem
+
+**Cel:** niezalogowany gość może zbudować koszyk (np. na demo `/swieze-z-kaszub`) bez wcześniejszego logowania, a po rejestracji/zalogowaniu jego lista **scala się** z serwerowym koszykiem klienta — bez konieczności ręcznego dodawania pozycji od nowa. Domyka lukę z EPIC-1 (B4: serwerowy koszyk + wymuszone logowanie), która dziś przy dodaniu do koszyka od razu wyrzuca gościa do `/konto`, a po logowaniu koszyk jest pusty.
+
+**Status:** 📋 backlog — rozpisany (S6.1 → S6.2).
+
+**Pochodzenie:** pozycja „łączenie gość→konto" z „Dalszego backlogu"; zgłoszona z obserwacji na `https://www.od-sasiada.pl/demo` (dodanie produktu bez konta → po rejestracji trzeba budować listę ponownie).
+
+**Zablokowane decyzje (G1–G3):**
+- **G1 — przechowywanie koszyka gościa: `localStorage`** (per slug tenanta), po stronie klienta. Bez anonimowego wiersza serwerowego (unika śmieci w `carts` i komplikacji izolacji tenanta / wyścigu z S1.2).
+- **G2 — strategia scalania: UNIA pozycji** (standard e-commerce, np. Shopify): dla tej samej pary produkt+wariant **sumuj ilości**; nowe pozycje dołóż; wynik **re-wyceniany serwerowo** (nie ufamy cenom z localStorage). Konflikt cen/niedostępny wariant → pomiń pozycję, nie wywalaj scalania.
+- **G3 — wymuszone logowanie przy CHECKOUT pozostaje** (B4 nienaruszone). Zmienia się tylko moment redirectu: dodawanie do koszyka dozwolone dla gościa, redirect do `/konto` dopiero przy „Zamawiam".
+
+**Kolejność budowania:** `S6.1 → S6.2` (S6.2 zależy od koszyka gościa z S6.1 oraz punktów wejścia auth z S1.0).
+
+### Historyjki
+
+| ID | Twierdzenie historyjki | Est. | Status | Zależy od |
+|----|------------------------|------|--------|-----------|
+| **S6.1** | Jako niezalogowany gość chcę dodawać produkty do koszyka i widzieć je między odświeżeniami strony (koszyk gościa w `localStorage`, per tenant), aby zbudować listę bez zakładania konta — a przekierowanie do logowania następuje dopiero przy checkoucie. | M | ☐ TODO | S1.2 (koszyk-store/cart-actions), S1.0 (auth = brama checkoutu) |
+| **S6.2** | Jako gość, który po zbudowaniu koszyka się rejestruje/loguje, chcę żeby moje pozycje scaliły się z serwerowym koszykiem konta (unia, sumowanie ilości, re-wycena serwerowa), aby nie budować listy od nowa. | M | ☐ TODO | S6.1, S1.0 (register/login), S1.2 (serwerowy koszyk `carts`) |
+
+### Kryteria akceptacji (podsumowanie)
+
+- **S6.1** — gość dodaje/zmienia ilość/usuwa pozycje bez logowania; koszyk trzymany w `localStorage` per slug tenanta i przeżywa odświeżenie; licznik/koszyk w UI odzwierciedla stan gościa; **brak redirectu do `/konto` przy dodawaniu** — redirect tylko przy próbie checkoutu (`requireLogin`); izolacja per tenant (klucz zawiera slug); zalogowany klient nadal używa serwerowego koszyka (`carts`), bez regresji S1.2.
+- **S6.2** — po sukcesie `registerCustomer`/`loginCustomer` klient-side czyta koszyk gościa z `localStorage` i wywołuje serwerową akcję scalającą (`mergeGuestCart`); scalanie = unia po (produkt, wariant), sumowanie ilości, **re-wycena serwerowa** (ceny z localStorage ignorowane), stempel `tenant`; pozycje niepasujące (wariant usunięty/inny tenant) pomijane bez błędu całości; po scaleniu `localStorage` koszyka gościa czyszczony; checkout dalej wymaga logowania (B4).
+
+---
+
+## Dalszy backlog (aktualizacja)
+
+*Zrealizowane z backlogu: „łączenie gość→konto" → EPIC-6. Pozostaje: korekta wagi przy dostawie (faza 2), e-mail klienta per-tenant, SMS, galeria zdjęć, hierarchia kategorii. Poza MVP: fakturowanie operatora, pełne RODO.*
